@@ -1,2 +1,6 @@
 # SoftwareDesignPatternRefactoring
-项目https://github.com/cbx6666/RPG-Game 代码重构
+Academic Year 2025-2026 Semester 1 
+420407 - Software Design Patterns 
+Final project
+
+Source https://github.com/cbx6666/RPG-Game
