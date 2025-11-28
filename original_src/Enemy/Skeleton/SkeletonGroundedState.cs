@@ -15,7 +15,7 @@ public class SkeletonGroundedState : EnemyState
     {
         base.Enter();
 
-        player = PlayerManager.instance.player.transform;
+        player = ServiceLocator.Instance.Get<IPlayerManager>().Player.transform;
     }
 
     public override void Exit()
@@ -31,7 +31,7 @@ public class SkeletonGroundedState : EnemyState
         {
             enemy.StartCoroutine("DiscoverPlayer");
 
-            AudioManager.instance.PlaySFX(10);
+            audioManager.PlaySFX(10);
 
             stateMachine.ChangeState(enemy.battleState);
         }

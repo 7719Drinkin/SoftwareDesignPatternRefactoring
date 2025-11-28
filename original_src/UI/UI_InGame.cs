@@ -9,6 +9,7 @@ using UnityEngine.UI;
 public class UI_InGame : MonoBehaviour
 {
     [SerializeField] private PlayerStats playerStats;     // 玩家属性引用
+    private IPlayerManager playerManager;                  // 玩家管理器引用
     [SerializeField] private Slider slider;                // 生命值滑块
     [SerializeField] private TextMeshProUGUI healthText;   // 生命值文本
     [SerializeField] private TextMeshProUGUI currencyText;  // 货币文本
@@ -47,56 +48,77 @@ public class UI_InGame : MonoBehaviour
     private bool amuletEquiped;                           // 护身符是否装备
     private bool flaskEquiped;                            // 药水是否装备
 
-    private SkillManager skills;                          // 技能管理器引用
-    private Inventory inventory;                           // 物品栏引用
+    private ISkillManager skills;                         // 技能管理器引用
+    private IInventory inventory;                         // 物品栏引用
 
     /// <summary>
     /// 初始化UI系统
     /// </summary>
     void Start()
     {
-        skills = SkillManager.instance;
-        inventory = Inventory.instance;
-        displayedCurrency = PlayerManager.instance.currency;
-        if (currencyText != null)
-            currencyText.text = displayedCurrency.ToString();
+        // 初始化服务依赖
+        playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
+        skills = ServiceLocator.Instance.Get<ISkillManager>();
+        inventory = ServiceLocator.Instance.Get<IInventory>();
+        
+        // 初始化货币显示
+        if (playerManager != null)
+        {
+            displayedCurrency = playerManager.Currency;
+            if (currencyText != null)
+                currencyText.text = displayedCurrency.ToString();
+        }
 
         // 绑定技能解锁事件
-        skills.dash.OnDashUnlocked += UnlockDash;
-        skills.dash.OnCloneOnDashUnlock += UnlockCloneOnDash;
-        skills.dash.OnDashAttackUnlock += UnlockDashAttack;
-        skills.parry.OnUnlockParry += UnlockParry;
-        skills.assassinate.OnAssassinateUnlock += UnlockAsssassinate;
-        skills.crystal.OnMultiCrystalUnlock += UnlockMultiCrystal;
-        skills.blackhole.OnBlackholeUnlock += UnlockBlackhole;
+        if (skills != null)
+        {
+            skills.Dash.OnDashUnlocked += UnlockDash;
+            skills.Dash.OnCloneOnDashUnlock += UnlockCloneOnDash;
+            skills.Dash.OnDashAttackUnlock += UnlockDashAttack;
+            skills.Parry.OnUnlockParry += UnlockParry;
+            skills.Assassinate.OnAssassinateUnlock += UnlockAsssassinate;
+            skills.Crystal.OnMultiCrystalUnlock += UnlockMultiCrystal;
+            skills.Blackhole.OnBlackholeUnlock += UnlockBlackhole;
 
-        // 绑定技能使用事件
-        skills.dash.OnDashUsed += UseDash;
-        PlayerManager.instance.player.dashState.OnCloneOnDashUsed += UseCloneOnDash;
-        skills.dashAttack.OnDashAttackUsed += UseDashAttack;
-        PlayerManager.instance.player.counterAttack.OnParryUsed += UseParry;
-        skills.assassinate.OnAssassinateUsed += UseAssassinate;
-        skills.crystal.OnMultiCrystalUsed += UseMultiCrystal;
-        skills.blackhole.OnBlackholeUsed += UseBlackhole;
+            // 绑定技能使用事件
+            skills.Dash.OnDashUsed += UseDash;
+            skills.DashAttack.OnDashAttackUsed += UseDashAttack;
+            skills.Assassinate.OnAssassinateUsed += UseAssassinate;
+            skills.Crystal.OnMultiCrystalUsed += UseMultiCrystal;
+            skills.Blackhole.OnBlackholeUsed += UseBlackhole;
+        }
+
+        // 绑定玩家状态事件（需要等待Player初始化）
+        if (playerManager != null && playerManager.Player != null)
+        {
+            playerManager.Player.dashState.OnCloneOnDashUsed += UseCloneOnDash;
+            playerManager.Player.counterAttack.OnParryUsed += UseParry;
+        }
 
         // 绑定装备事件
-        inventory.OnWeaponEquiped += EquipWeapon;
-        inventory.OnWeaponUnequiped += UnequipWeapon;
-        inventory.OnWeaponUsed += UseWeapon;
+        if (inventory != null)
+        {
+            inventory.OnWeaponEquiped += EquipWeapon;
+            inventory.OnWeaponUnequiped += UnequipWeapon;
+            inventory.OnWeaponUsed += UseWeapon;
 
-        inventory.OnArmorEquiped += EquipArmor;
-        inventory.OnArmorUnequiped += UnequipedArmor;
-        inventory.OnArmorUsed += UseArmor;
+            inventory.OnArmorEquiped += EquipArmor;
+            inventory.OnArmorUnequiped += UnequipedArmor;
+            inventory.OnArmorUsed += UseArmor;
 
-        inventory.OnAmuletEquiped += EquipAmulet;
-        inventory.OnAmuletUnequiped += UnequipedAmulet;
-        inventory.OnAmuletUsed += UseAmulet;
+            inventory.OnAmuletEquiped += EquipAmulet;
+            inventory.OnAmuletUnequiped += UnequipedAmulet;
+            inventory.OnAmuletUsed += UseAmulet;
 
-        inventory.OnFlaskEquiped += EquipFlask;
-        inventory.OnFlaskUnequiped += UnEquipedFlask;
-        inventory.OnFlaskUsed += UseFlask;
+            inventory.OnFlaskEquiped += EquipFlask;
+            inventory.OnFlaskUnequiped += UnEquipedFlask;
+            inventory.OnFlaskUsed += UseFlask;
+        }
 
-        AudioManager.instance.PlayBGM(1);
+        // 播放背景音乐
+        var audioManager = ServiceLocator.Instance.Get<IAudioManager>();
+        if (audioManager != null)
+            audioManager.PlayBGM(1);
     }
 
     /// <summary>
@@ -123,7 +145,7 @@ public class UI_InGame : MonoBehaviour
         if (currencyText == null)
             return;
 
-        int target = PlayerManager.instance.currency;
+        int target = playerManager.Currency;
         if (displayedCurrency == target)
             return;
 
@@ -145,19 +167,19 @@ public class UI_InGame : MonoBehaviour
     {
         // 更新等级文本显示
         if (levelText != null)
-            levelText.text = PlayerManager.instance.playerLevel.ToString();
+            levelText.text = playerManager.PlayerLevel.ToString();
 
         // 更新经验环填充度
         if (experienceRing != null)
         {
             // 调试信息
-            if (PlayerManager.instance == null)
+            if (playerManager == null)
             {
                 return;
             }
 
-            int currentExp = PlayerManager.instance.currentExperience;
-            int currentLevel = PlayerManager.instance.playerLevel;
+            int currentExp = playerManager.CurrentExperience;
+            int currentLevel = playerManager.PlayerLevel;
             
             float requiredExp = 200 * (currentLevel / 5 + 1);
             float fill = Mathf.Clamp01(currentExp / requiredExp);
@@ -171,35 +193,49 @@ public class UI_InGame : MonoBehaviour
     /// </summary>
     private void Update()
     {
+        // 延迟初始化
+        if (playerManager == null)
+            playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
+        if (skills == null)
+            skills = ServiceLocator.Instance.Get<ISkillManager>();
+        if (inventory == null)
+            inventory = ServiceLocator.Instance.Get<IInventory>();
+
         UpdateHealthUI();
         UpdateCurrencyUI();
         UpdateExperienceUI();
 
         // 更新技能冷却显示
-        if (dashUnlock)
-            CheckCooldownOf(dashImage, skills.dash.cooldown);
-        if (cloneOnDashUnlock)
-            CheckCooldownOf(cloneOnDashImage, skills.clone.cooldown);
-        if (dashAttackUnlock)
-            CheckCooldownOf(dashAttackImage, skills.dashAttack.cooldown);
-        if (parryUnlock)
-            CheckCooldownOf(parryImage, skills.parry.cooldown);
-        if (assassinateUnlock)
-            CheckCooldownOf(assassinateImage, skills.assassinate.cooldown);
-        if (multiCrystalUnlock)
-            CheckCooldownOf(multiCrystalImage, skills.crystal.multiStackCooldown);
-        if (blackholeUnlock)
-            CheckCooldownOf(blackholeImage, skills.blackhole.cooldown);
+        if (skills != null)
+        {
+            if (dashUnlock)
+                CheckCooldownOf(dashImage, skills.Dash.cooldown);
+            if (cloneOnDashUnlock)
+                CheckCooldownOf(cloneOnDashImage, skills.Clone.cooldown);
+            if (dashAttackUnlock)
+                CheckCooldownOf(dashAttackImage, skills.DashAttack.cooldown);
+            if (parryUnlock)
+                CheckCooldownOf(parryImage, skills.Parry.cooldown);
+            if (assassinateUnlock)
+                CheckCooldownOf(assassinateImage, skills.Assassinate.cooldown);
+            if (multiCrystalUnlock)
+                CheckCooldownOf(multiCrystalImage, skills.Crystal.multiStackCooldown);
+            if (blackholeUnlock)
+                CheckCooldownOf(blackholeImage, skills.Blackhole.cooldown);
+        }
 
         // 更新装备冷却显示
-        if (weaponEquiped)
-            CheckCooldownOf(weaponImage, inventory.GetEquipment(EquipmentType.Weapon).itemCooldown);
-        if (armorEquiped)
-            CheckCooldownOf(armorImage, inventory.GetEquipment(EquipmentType.Armor).itemCooldown);
-        if (amuletEquiped)
-            CheckCooldownOf(amuletImage, inventory.GetEquipment(EquipmentType.Amulet).itemCooldown);
-        if (flaskEquiped)
-            CheckCooldownOf(flaskImage, inventory.GetEquipment(EquipmentType.Flask).itemCooldown);
+        if (inventory != null)
+        {
+            if (weaponEquiped)
+                CheckCooldownOf(weaponImage, inventory.GetEquipment(EquipmentType.Weapon).itemCooldown);
+            if (armorEquiped)
+                CheckCooldownOf(armorImage, inventory.GetEquipment(EquipmentType.Armor).itemCooldown);
+            if (amuletEquiped)
+                CheckCooldownOf(amuletImage, inventory.GetEquipment(EquipmentType.Amulet).itemCooldown);
+            if (flaskEquiped)
+                CheckCooldownOf(flaskImage, inventory.GetEquipment(EquipmentType.Flask).itemCooldown);
+        }
     }
 
     /// <summary>

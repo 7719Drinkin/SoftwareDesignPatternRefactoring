@@ -7,12 +7,9 @@ using UnityEngine;
 /// 统一管理所有实现了ISaveManager接口的组件
 /// 支持加密存档和自动保存功能
 /// </summary>
-public class SaveManager : MonoBehaviour
+public class SaveManager : MonoBehaviour, ISaveManagerService
 {
     private GameData gameData;                             // 游戏数据
-
-    public static SaveManager instance;                    // 单例实例
-
     private List<ISaveManager> saveManagers = new List<ISaveManager>(); // 存档管理器列表
 
     [SerializeField] private string fileName;               // 存档文件名
@@ -31,16 +28,6 @@ public class SaveManager : MonoBehaviour
         dataHandler.Delete();
     }
 
-    /// <summary>
-    /// 初始化单例
-    /// </summary>
-    private void Awake()
-    {
-        if (instance != null)
-            Destroy(instance.gameObject);
-        else
-            instance = this;
-    }
 
     /// <summary>
     /// 初始化存档系统

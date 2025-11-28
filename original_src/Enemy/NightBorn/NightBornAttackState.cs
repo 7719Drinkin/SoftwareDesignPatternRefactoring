@@ -19,7 +19,7 @@ public class NightBornAttackState : EnemyState
 
         enemy.anim.speed *= (1 + attackSpeed);
 
-        AudioManager.instance.PlaySFX(47);
+        audioManager.PlaySFX(47);
     }
 
     public override void Update()

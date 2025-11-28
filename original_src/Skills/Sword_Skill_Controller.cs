@@ -37,6 +37,7 @@ public class Sword_Skill_Controller : MonoBehaviour
 
     private bool canFreezeEnemy;
     private bool canUseAmulet;
+    private IAudioManager audioManager;
 
     private void Awake()
     {
@@ -52,6 +53,7 @@ public class Sword_Skill_Controller : MonoBehaviour
 
     public void SetupSword(Vector2 _dir, float _gravityScale, Player _player, bool _canFreezeEnemy, float _freezeTimeDuration, bool _canUseAmulet)
     {
+        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
         player = _player;
 
         rb.velocity = _dir;
@@ -215,10 +217,10 @@ public class Sword_Skill_Controller : MonoBehaviour
             {
                 collision.GetComponent<Enemy>().FreezeTimeFor(freezeTimeDuration);
 
-                ItemData_Equipment equipedAmulet = Inventory.instance.GetEquipment(EquipmentType.Amulet);
+                ItemData_Equipment equipedAmulet = ServiceLocator.Instance.Get<IInventory>().GetEquipment(EquipmentType.Amulet);
 
                 if (equipedAmulet != null && canUseAmulet)
-                    if (Inventory.instance.CanUseAmulet())
+                    if (ServiceLocator.Instance.Get<IInventory>().CanUseAmulet())
                         equipedAmulet.ExecuteItemEffect(collision.GetComponent<Enemy>().transform);
             }
 
@@ -255,7 +257,7 @@ public class Sword_Skill_Controller : MonoBehaviour
         }
 
         if (!hitEnemy)
-            AudioManager.instance.PlaySFX(42);
+            audioManager.PlaySFX(42);
 
         canRotate = false;
 

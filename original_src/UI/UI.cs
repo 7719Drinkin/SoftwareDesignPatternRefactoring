@@ -12,6 +12,8 @@ public class UI : MonoBehaviour
     [SerializeField] private GameObject popUpTextPrefab;
 
     private bool isOpen;
+    private IAudioManager audioManager;
+    private IGameManager gameManager;
 
     public UI_ItemToolTip itemToolTip;
     public UI_StatToolTip statToolTip;
@@ -24,6 +26,9 @@ public class UI : MonoBehaviour
 
     void Start()
     {
+        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
+        gameManager = ServiceLocator.Instance.Get<IGameManager>();
+        
         itemToolTip = UI_ItemToolTip.instance;
         statToolTip = UI_StatToolTip.instance;
         skillToolTip = UI_SkillToolTip.instance;
@@ -39,18 +44,18 @@ public class UI : MonoBehaviour
         {
             if (!isOpen)
             {
-                AudioManager.instance.PlaySFX(23);
+                audioManager.PlaySFX(23);
                 SwitchTo(characterUI);
 
-                if (GameManager.instance != null)
-                    GameManager.instance.PauseGame(true);
+                if (gameManager != null)
+                    gameManager.PauseGame(true);
             }
             else
             {
                 SwitchTo(inGameUI);
-                if (GameManager.instance != null)
-                    GameManager.instance.PauseGame(false);
-                AudioManager.instance.PlaySFX(23);
+                if (gameManager != null)
+                    gameManager.PauseGame(false);
+                audioManager.PlaySFX(23);
             }
 
             isOpen = !isOpen;
@@ -144,9 +149,9 @@ public class UI : MonoBehaviour
             tmp.text = text;
     }
 
-    public void RestartGame() => GameManager.instance.ReStartScene();
+    public void RestartGame() => gameManager.ReStartScene();
 
-    public void PlayCLickSFX() => AudioManager.instance.PlaySFX(25);
+    public void PlayCLickSFX() => audioManager.PlaySFX(25);
 
-    public void PlayButtonSFX() => AudioManager.instance.PlaySFX(24);
+    public void PlayButtonSFX() => audioManager.PlaySFX(24);
 }

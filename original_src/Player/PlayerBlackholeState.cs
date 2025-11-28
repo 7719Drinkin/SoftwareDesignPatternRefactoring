@@ -29,7 +29,7 @@ public class PlayerBlackholeState : PlayerState
         player.stats.critChance.AddModifier(40);
         player.stats.critPower.AddModifier(40);
 
-        AudioManager.instance.PlaySFX(36);
+        audioManager.PlaySFX(36);
     }
 
     public override void Exit()
@@ -45,7 +45,7 @@ public class PlayerBlackholeState : PlayerState
         player.stats.critChance.RemoveModifier(40);
         player.stats.critPower.RemoveModifier(40);
 
-        AudioManager.instance.PlaySFX(37);
+        audioManager.PlaySFX(37);
     }
 
     public override void Update()
@@ -60,12 +60,12 @@ public class PlayerBlackholeState : PlayerState
 
             if (!skillUsed)
             {
-                player.skill.blackhole.CreateBlackhole();
+                player.skill.Blackhole.CreateBlackhole();
                 skillUsed = true;
             }
         }
 
-        if (player.skill.blackhole.SkillCompleted())
+        if (player.skill.Blackhole.SkillCompleted())
             player.stateMachine.ChangeState(player.airState);
     }
 }

@@ -13,7 +13,7 @@ public class PlayerWallJumpState : PlayerState
 
         player.SetVelocity(-5 * player.facingDir, player.jumpForce);
 
-        AudioManager.instance.PlaySFX(14);
+        audioManager.PlaySFX(14);
     }
 
     public override void Exit()

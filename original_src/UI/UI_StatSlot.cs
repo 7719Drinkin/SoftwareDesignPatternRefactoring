@@ -13,6 +13,7 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     [SerializeField] private string statDescription;
 
     private UI ui;
+    private IPlayerManager playerManager;
 
     private void OnValidate()
     {
@@ -24,25 +25,28 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     void Start()
     {
+        playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
         UpdateStatValueUI();
 
         ui = GetComponentInParent<UI>();
         
         // 订阅PlayerManager数据加载完成事件
-        if (PlayerManager.instance != null)
-            PlayerManager.instance.OnPlayerDataLoaded += UpdateStatValueUI;
+        if (playerManager != null)
+            playerManager.OnPlayerDataLoaded += UpdateStatValueUI;
     }
     
     private void OnDestroy()
     {
         // 取消订阅事件
-        if (PlayerManager.instance != null)
-            PlayerManager.instance.OnPlayerDataLoaded -= UpdateStatValueUI;
+        if (playerManager != null)
+            playerManager.OnPlayerDataLoaded -= UpdateStatValueUI;
     }
 
     public void UpdateStatValueUI()
     {
-        PlayerStats playerStats = PlayerManager.instance.player.GetComponent<PlayerStats>();
+        if (playerManager == null)
+            playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
+        PlayerStats playerStats = playerManager.Player.GetComponent<PlayerStats>();
 
         if (playerStats != null)
         {

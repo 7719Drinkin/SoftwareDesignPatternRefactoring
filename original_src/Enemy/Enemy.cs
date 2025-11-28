@@ -10,6 +10,10 @@ public class Enemy : Entity
 {
     [SerializeField] protected LayerMask whatIsPlayer;      // 玩家层级掩码
 
+    // ========== 服务依赖 ==========
+    protected IPlayerManager playerManager;
+    protected IAudioManager audioManager;
+
     [Header("Stunned info")]
     public float stunnedDuration;                           // 眩晕持续时间
     public Vector2 stunnedDistance;                         // 眩晕时的击退距离
@@ -70,6 +74,10 @@ public class Enemy : Entity
         defaultMoveSpeed = moveSpeed;
 
         enemyStats = GetComponent<EnemyStats>();
+
+        // 通过ServiceLocator获取依赖
+        playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
+        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
     }
 
     /// <summary>
@@ -307,7 +315,7 @@ public class Enemy : Entity
     /// </summary>
     public void PlayerGetCurrency()
     {
-        PlayerManager.instance.currency += dropCurrency;
+        playerManager.Currency += dropCurrency;
     }
 
     public void CheckNormalColor()

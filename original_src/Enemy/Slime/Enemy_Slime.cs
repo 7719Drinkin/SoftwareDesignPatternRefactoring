@@ -54,7 +54,7 @@ public class Enemy_Slime : Enemy
         if (isDead) return;
         isDead = true;
 
-        AudioManager.instance.PlaySFX(46);
+        audioManager.PlaySFX(46);
 
         switch (size)
         {

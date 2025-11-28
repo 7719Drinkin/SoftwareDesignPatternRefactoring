@@ -21,7 +21,7 @@ public class NightBornStunnedState : EnemyState
 
         enemy.rb.velocity = new Vector2(-enemy.facingDir * enemy.stunnedDistance.x, enemy.stunnedDistance.y);
 
-        AudioManager.instance.PlaySFX(53);
+        audioManager.PlaySFX(53);
     }
 
     public override void Exit()

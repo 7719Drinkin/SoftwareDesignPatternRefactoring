@@ -8,6 +8,8 @@ public class ItemDrop : MonoBehaviour
     private List<ItemData> dropList = new List<ItemData>();
 
     [SerializeField] private GameObject dropPrefab;
+    
+    private IDroppedItemManager droppedItemManager;
 
     public virtual void GenerateDrop()
     {
@@ -29,10 +31,12 @@ public class ItemDrop : MonoBehaviour
 
     protected void DropItem(ItemData _itemData)
     {
+        if (droppedItemManager == null)
+            droppedItemManager = ServiceLocator.Instance.Get<IDroppedItemManager>();
 
         Vector2 randomVelocity = new Vector2(Random.Range(-5, 5), Random.Range(15, 20));
 
-        if (DroppedItemManager.instance != null)
-            DroppedItemManager.instance.SpawnItem(_itemData, transform.position, randomVelocity);
+        if (droppedItemManager != null)
+            droppedItemManager.SpawnItem(_itemData, transform.position, randomVelocity);
     }
 }

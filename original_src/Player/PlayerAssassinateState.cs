@@ -29,7 +29,7 @@ public class PlayerAssassinateState : PlayerState
 
         afterImageTimer = 0f;
 
-        AudioManager.instance.PlaySFX(15);
+        audioManager.PlaySFX(15);
     }
 
     public override void Exit()

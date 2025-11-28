@@ -9,11 +9,11 @@ using UnityEngine.UI;
 /// 实现物品的装备、使用、合成和存档功能
 /// 支持装备效果、冷却时间和技能解锁
 /// </summary>
-public class Inventory : MonoBehaviour, ISaveManager
+public class Inventory : MonoBehaviour, ISaveManager, IInventory
 {
-    public static Inventory instance;                      // 单例实例
+    private IAudioManager audioManager;
 
-    public List<ItemData> startingEquipent;                // 初始装备列表
+    public List<ItemData> startingEquipent;
 
     public List<InventoryItem> equipment;                  // 已装备物品列表
     public Dictionary<ItemData_Equipment, InventoryItem> equipmentDictionary; // 装备字典
@@ -42,9 +42,13 @@ public class Inventory : MonoBehaviour, ISaveManager
     private float lastTimeUseFlask;                         // 上次使用药水时间
 
     [Header("Use amulet")]
-    public bool dashUseAmulet;                              // 冲刺时使用护身符
-    public bool jumpUseAmulet;                             // 跳跃时使用护身符
-    public bool swordUseAmulet;                            // 剑攻击时使用护身符
+    [SerializeField] private bool dashUseAmulet;
+    [SerializeField] private bool jumpUseAmulet;
+    [SerializeField] private bool swordUseAmulet;
+
+    public bool DashUseAmulet { get => dashUseAmulet; set => dashUseAmulet = value; }
+    public bool JumpUseAmulet { get => jumpUseAmulet; set => jumpUseAmulet = value; }
+    public bool SwordUseAmulet { get => swordUseAmulet; set => swordUseAmulet = value; }
 
     // 装备事件
     public event Action OnWeaponEquiped;                    // 武器装备事件
@@ -69,25 +73,14 @@ public class Inventory : MonoBehaviour, ISaveManager
     [SerializeField] private UI_SkillTreeSlot swordUseAmuletUnlockButton;  // 剑攻击护身符解锁按钮
 
     [Header("Database")]
-    public List<InventoryItem> loadedItems;                // 加载的物品列表
-    public List<ItemData_Equipment> loadedEquipment;       // 加载的装备列表
+    public List<InventoryItem> loadedItems;
+    public List<ItemData_Equipment> loadedEquipment;
 
-    /// <summary>
-    /// 初始化单例
-    /// </summary>
-    private void Awake()
-    {
-        if (instance == null)
-            instance = this;
-        else
-            Destroy(gameObject);
-    }
-
-    /// <summary>
-    /// 初始化物品栏系统
-    /// </summary>
     private void Start()
     {
+        // 获取服务依赖
+        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
+        
         // 初始化字典和列表
         inventory = new List<InventoryItem>();
         inventoryDictionary = new Dictionary<ItemData, InventoryItem>();
@@ -367,7 +360,7 @@ public class Inventory : MonoBehaviour, ISaveManager
             {
                 if (stashValue.stackSize < _requiredMaterials[i].stackSize)
                 {
-                    AudioManager.instance.PlaySFX(29); // 合成失败音效
+                    audioManager.PlaySFX(29); // 合成失败音效
                     return false;
                 }
                 else
@@ -377,7 +370,7 @@ public class Inventory : MonoBehaviour, ISaveManager
             }
             else
             {
-                AudioManager.instance.PlaySFX(29); // 合成失败音效
+                audioManager.PlaySFX(29); // 合成失败音效
                 return false;
             }
         }
@@ -388,7 +381,7 @@ public class Inventory : MonoBehaviour, ISaveManager
                 RemoveItem(materialsToRemove[i].data);
         AddItem(_itemToCraft);
 
-        AudioManager.instance.PlaySFX(28); // 合成成功音效
+        audioManager.PlaySFX(28); // 合成成功音效
 
         return true;
     }
@@ -500,7 +493,7 @@ public class Inventory : MonoBehaviour, ISaveManager
         {
             lastTimeUseFlask = Time.time;
             OnFlaskUsed?.Invoke();
-            AudioManager.instance.PlaySFX(38); // 药水使用音效
+            audioManager.PlaySFX(38); // 药水使用音效
         }
 
         return canUseFlask;

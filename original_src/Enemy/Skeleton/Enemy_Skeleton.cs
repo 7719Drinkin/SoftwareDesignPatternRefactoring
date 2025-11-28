@@ -51,7 +51,7 @@ public class Enemy_Skeleton : Enemy
     {
         if (base.EnemyCanBeBlocked())
         {
-            StartCoroutine(BlockKnockback(PlayerManager.instance.player.transform));
+            StartCoroutine(BlockKnockback(playerManager.Player.transform));
 
             Vector2 spawnPosition = new Vector2(transform.position.x + (0.5f * facingDir), transform.position.y + 1.2f);
             Instantiate(sparkPrefab, spawnPosition, transform.rotation);

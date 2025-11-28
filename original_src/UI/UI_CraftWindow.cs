@@ -64,7 +64,7 @@ public class UI_CraftWindow : MonoBehaviour
 
         if (craftButton != null)
             craftButton.onClick.AddListener(() => {
-                bool canCraft = Inventory.instance.CanCraft(data, data.craftingMaterials);
+                bool canCraft = ServiceLocator.Instance.Get<IInventory>().CanCraft(data, data.craftingMaterials);
                 if (canCraft)
                     ui.CreateUI_PopUpText("合成成功");
                 else

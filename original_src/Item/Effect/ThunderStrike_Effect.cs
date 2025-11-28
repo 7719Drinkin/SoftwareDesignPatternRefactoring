@@ -8,7 +8,7 @@ public class ThunderStrike_Effect : ItemEffect
     public override bool ExecuteEffect(Transform enemyPosition)
     {
         Instantiate(thunderPrefab, enemyPosition.position, Quaternion.identity);
-        AudioManager.instance.PlaySFX(27);
+        ServiceLocator.Instance.Get<IAudioManager>().PlaySFX(27);
         return true; // 雷电效果总是执行
     }
 }

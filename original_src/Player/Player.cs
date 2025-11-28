@@ -29,12 +29,14 @@ public class Player : Entity
     private float defaultJumpForce;                          // 默认跳跃力度
     private float defaultDashSpeed;                          // 默认冲刺速度
 
-    public SkillManager skill { get; private set; }          // 技能管理器
-    public GameObject sword { get; private set; }            // 剑对象
+    public ISkillManager skill { get; private set; }
+    public GameObject sword { get; private set; }
 
-    [SerializeField] protected Transform groundCheckBack;   // 后方地面检测点
+    [SerializeField] protected Transform groundCheckBack;
 
     private PlayerItemDrop playerItemDrop;
+
+    private IInventory inventory;
 
     #region States
     public PlayerStateMachine stateMachine { get; private set; }  // 玩家状态机
@@ -96,14 +98,15 @@ public class Player : Entity
     {
         base.Start();
 
-        skill = SkillManager.instance;
+        skill = ServiceLocator.Instance.Get<ISkillManager>();
+        inventory = ServiceLocator.Instance.Get<IInventory>();
 
         stateMachine.Initialize(idleState);
 
         // 保存默认值用于减速效果恢复
         defaultMoveSpeed = moveSpeed;
         defaultJumpForce = jumpForce;
-        defaultDashSpeed = skill.dash.dashSpeed;
+        defaultDashSpeed = skill.Dash.dashSpeed;
 
         playerItemDrop = GetComponent<PlayerItemDrop>();
     }
@@ -148,7 +151,7 @@ public class Player : Entity
 
         moveSpeed *= 1 - slowPercentage;
         jumpForce *= 1 - slowPercentage;
-        skill.dash.dashSpeed *= 1 - slowPercentage;
+        skill.Dash.dashSpeed *= 1 - slowPercentage;
         anim.speed *= 1 - slowPercentage;
 
         Invoke("ReturnDefaultSpeed", slowDuration);
@@ -164,7 +167,7 @@ public class Player : Entity
         moveSpeed = defaultMoveSpeed;
         jumpForce = defaultJumpForce;
         anim.speed = 1;
-        skill.dash.dashSpeed = defaultDashSpeed;
+        skill.Dash.dashSpeed = defaultDashSpeed;
     }
 
     /// <summary>
@@ -217,22 +220,22 @@ public class Player : Entity
         if (IsWallDetected())
             return;
 
-        if (!skill.dash.dash)
+        if (!skill.Dash.dash)
             return;
 
-        if (Input.GetKeyDown(KeyCode.Q) && skill.dash.CanUseSkill())
+        if (Input.GetKeyDown(KeyCode.Q) && skill.Dash.CanUseSkill())
         {
             if (stateMachine.currentState == blackhole)
                 return;
 
-            skill.dash.dashDir = Input.GetAxisRaw("Horizontal");
+            skill.Dash.dashDir = Input.GetAxisRaw("Horizontal");
 
-            if (skill.dash.dashDir == 0)
-                skill.dash.dashDir = facingDir;
+            if (skill.Dash.dashDir == 0)
+                skill.Dash.dashDir = facingDir;
 
             // 如果装备了护身符且可以使用，则延迟使用
-            if (Inventory.instance.dashUseAmulet)
-                if (Inventory.instance.CanUseAmulet())
+            if (inventory.DashUseAmulet)
+                if (inventory.CanUseAmulet())
                     StartCoroutine(DelayUseAmulet());
 
             stateMachine.ChangeState(dashState);
@@ -247,7 +250,7 @@ public class Player : Entity
     {
         yield return new WaitForSeconds(0.125f);
 
-        ItemData_Equipment equipedAmulet = Inventory.instance.GetEquipment(EquipmentType.Amulet);
+        ItemData_Equipment equipedAmulet = inventory.GetEquipment(EquipmentType.Amulet);
 
         if (equipedAmulet != null)
             equipedAmulet.ExecuteItemEffect(transform);
@@ -258,8 +261,8 @@ public class Player : Entity
     /// </summary>
     private void CheckForCrystalInput()
     {
-        if (Input.GetKeyDown(KeyCode.C) && SkillManager.instance.crystal.crystal)
-            skill.crystal.CanUseSkill();
+        if (Input.GetKeyDown(KeyCode.C) && skill.Crystal.crystal)
+            skill.Crystal.CanUseSkill();
     }
 
     /// <summary>
@@ -267,9 +270,9 @@ public class Player : Entity
     /// </summary>
     private void CheckForFlaskInput()
     {
-        if (Input.GetKeyDown(KeyCode.H) && Inventory.instance.CanUseFlask())
+        if (Input.GetKeyDown(KeyCode.H) && inventory.CanUseFlask())
         {
-            ItemData_Equipment currentFlask = Inventory.instance.GetEquipment(EquipmentType.Flask);
+            ItemData_Equipment currentFlask = inventory.GetEquipment(EquipmentType.Flask);
 
             if (currentFlask != null)
                 currentFlask.ExecuteItemEffect(transform);
@@ -284,9 +287,9 @@ public class Player : Entity
         if (stateMachine.currentState == blackhole)
             return;
 
-        if (Input.GetKeyDown(KeyCode.X) && SkillManager.instance.assassinate.assassinate)
+        if (Input.GetKeyDown(KeyCode.X) && skill.Assassinate.assassinate)
         {
-            if (!SkillManager.instance.assassinate.CanUseSkill())
+            if (!skill.Assassinate.CanUseSkill())
                 return;
 
             stateMachine.ChangeState(assassinate);
