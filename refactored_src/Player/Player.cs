@@ -38,6 +38,9 @@ public class Player : Entity
 
     private IInventory inventory;
 
+    // ========== Command Pattern ==========
+    private PlayerInputHandler inputHandler;
+
     #region States
     public PlayerStateMachine stateMachine { get; private set; }  // 玩家状态机
 
@@ -109,6 +112,25 @@ public class Player : Entity
         defaultDashSpeed = skill.Dash.dashSpeed;
 
         playerItemDrop = GetComponent<PlayerItemDrop>();
+
+        // ========== 初始化命令模式 ==========
+        InitializeCommands();
+    }
+
+    /// <summary>
+    /// 初始化命令模式 - Client 代码
+    /// 创建命令并绑定到 Invoker
+    /// </summary>
+    private void InitializeCommands()
+    {
+        // 创建 InputHandler（Invoker）
+        inputHandler = gameObject.AddComponent<PlayerInputHandler>();
+
+        // 创建具体命令并设置到 Invoker
+        inputHandler.SetDashCommand(new DashCommand(this, skill, inventory));
+        inputHandler.SetCrystalCommand(new CrystalCommand(skill));
+        inputHandler.SetFlaskCommand(new FlaskCommand(inventory, transform));
+        inputHandler.SetAssassinateCommand(new AssassinateCommand(this, skill));
     }
 
     /// <summary>
@@ -123,11 +145,9 @@ public class Player : Entity
 
         stateMachine.currentState.Update();
 
-        // 检测各种输入
-        CheckForDashInput();
-        CheckForCrystalInput();
-        CheckForFlaskInput();
-        CheckForAssassinateInput();
+        // ========== 使用命令模式处理输入 ==========
+        if (inputHandler != null)
+            inputHandler.HandleInput();
 
         CheckNormalColor();
     }
@@ -208,93 +228,6 @@ public class Player : Entity
         stateMachine.currentState.AnimationFinishTrigger();
     }
 
-    /// <summary>
-    /// 检测冲刺输入
-    /// </summary>
-    private void CheckForDashInput()
-    {
-
-        if (stats.isDead)
-            return;
-
-        if (IsWallDetected())
-            return;
-
-        if (!skill.Dash.dash)
-            return;
-
-        if (Input.GetKeyDown(KeyCode.Q) && skill.Dash.CanUseSkill())
-        {
-            if (stateMachine.currentState == blackhole)
-                return;
-
-            skill.Dash.dashDir = Input.GetAxisRaw("Horizontal");
-
-            if (skill.Dash.dashDir == 0)
-                skill.Dash.dashDir = facingDir;
-
-            // 如果装备了护身符且可以使用，则延迟使用
-            if (inventory.DashUseAmulet)
-                if (inventory.CanUseAmulet())
-                    StartCoroutine(DelayUseAmulet());
-
-            stateMachine.ChangeState(dashState);
-        }
-    }
-
-    /// <summary>
-    /// 延迟使用护身符
-    /// </summary>
-    /// <returns></returns>
-    private IEnumerator DelayUseAmulet()
-    {
-        yield return new WaitForSeconds(0.125f);
-
-        ItemData_Equipment equipedAmulet = inventory.GetEquipment(EquipmentType.Amulet);
-
-        if (equipedAmulet != null)
-            equipedAmulet.ExecuteItemEffect(transform);
-    }
-
-    /// <summary>
-    /// 检测水晶技能输入
-    /// </summary>
-    private void CheckForCrystalInput()
-    {
-        if (Input.GetKeyDown(KeyCode.C) && skill.Crystal.crystal)
-            skill.Crystal.CanUseSkill();
-    }
-
-    /// <summary>
-    /// 检测药水输入
-    /// </summary>
-    private void CheckForFlaskInput()
-    {
-        if (Input.GetKeyDown(KeyCode.H) && inventory.CanUseFlask())
-        {
-            ItemData_Equipment currentFlask = inventory.GetEquipment(EquipmentType.Flask);
-
-            if (currentFlask != null)
-                currentFlask.ExecuteItemEffect(transform);
-        }
-    }
-
-    /// <summary>
-    /// 检测暗杀技能输入
-    /// </summary>
-    private void CheckForAssassinateInput()
-    {
-        if (stateMachine.currentState == blackhole)
-            return;
-
-        if (Input.GetKeyDown(KeyCode.X) && skill.Assassinate.assassinate)
-        {
-            if (!skill.Assassinate.CanUseSkill())
-                return;
-
-            stateMachine.ChangeState(assassinate);
-        }
-    }
 
     /// <summary>
     /// 玩家死亡处理
