@@ -50,6 +50,7 @@ public class UI_InGame : MonoBehaviour
 
     private ISkillManager skills;                         // 技能管理器引用
     private IInventory inventory;                         // 物品栏引用
+    private GameEventBus eventBus;                        // 事件总线引用
 
     /// <summary>
     /// 初始化UI系统
@@ -60,7 +61,8 @@ public class UI_InGame : MonoBehaviour
         playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
         skills = ServiceLocator.Instance.Get<ISkillManager>();
         inventory = ServiceLocator.Instance.Get<IInventory>();
-        
+        eventBus = ServiceLocator.Instance.Get<GameEventBus>();
+
         // 初始化货币显示
         if (playerManager != null)
         {
@@ -69,56 +71,181 @@ public class UI_InGame : MonoBehaviour
                 currencyText.text = displayedCurrency.ToString();
         }
 
-        // 绑定技能解锁事件
-        if (skills != null)
-        {
-            skills.Dash.OnDashUnlocked += UnlockDash;
-            skills.Dash.OnCloneOnDashUnlock += UnlockCloneOnDash;
-            skills.Dash.OnDashAttackUnlock += UnlockDashAttack;
-            skills.Parry.OnUnlockParry += UnlockParry;
-            skills.Assassinate.OnAssassinateUnlock += UnlockAsssassinate;
-            skills.Crystal.OnMultiCrystalUnlock += UnlockMultiCrystal;
-            skills.Blackhole.OnBlackholeUnlock += UnlockBlackhole;
-
-            // 绑定技能使用事件
-            skills.Dash.OnDashUsed += UseDash;
-            skills.DashAttack.OnDashAttackUsed += UseDashAttack;
-            skills.Assassinate.OnAssassinateUsed += UseAssassinate;
-            skills.Crystal.OnMultiCrystalUsed += UseMultiCrystal;
-            skills.Blackhole.OnBlackholeUsed += UseBlackhole;
-        }
-
-        // 绑定玩家状态事件（需要等待Player初始化）
-        if (playerManager != null && playerManager.Player != null)
-        {
-            playerManager.Player.dashState.OnCloneOnDashUsed += UseCloneOnDash;
-            playerManager.Player.counterAttack.OnParryUsed += UseParry;
-        }
-
-        // 绑定装备事件
-        if (inventory != null)
-        {
-            inventory.OnWeaponEquiped += EquipWeapon;
-            inventory.OnWeaponUnequiped += UnequipWeapon;
-            inventory.OnWeaponUsed += UseWeapon;
-
-            inventory.OnArmorEquiped += EquipArmor;
-            inventory.OnArmorUnequiped += UnequipedArmor;
-            inventory.OnArmorUsed += UseArmor;
-
-            inventory.OnAmuletEquiped += EquipAmulet;
-            inventory.OnAmuletUnequiped += UnequipedAmulet;
-            inventory.OnAmuletUsed += UseAmulet;
-
-            inventory.OnFlaskEquiped += EquipFlask;
-            inventory.OnFlaskUnequiped += UnEquipedFlask;
-            inventory.OnFlaskUsed += UseFlask;
-        }
+        // ========== 订阅事件总线（Observer Pattern） ==========
+        SubscribeToEvents();
 
         // 播放背景音乐
         var audioManager = ServiceLocator.Instance.Get<IAudioManager>();
         if (audioManager != null)
             audioManager.PlayBGM(1);
+    }
+
+    /// <summary>
+    /// 订阅游戏事件 - UI 作为 Observer（观察者）
+    /// 替代原来的直接事件订阅，解耦 UI 与技能/装备系统
+    /// </summary>
+    private void SubscribeToEvents()
+    {
+        if (eventBus == null)
+            return;
+
+        // ========== 订阅技能使用事件（替代 skills.Dash.OnDashUsed 等） ==========
+        eventBus.Subscribe<SkillUsedEvent>(OnSkillUsedViaEventBus);
+
+        // ========== 订阅技能解锁事件（替代 skills.Dash.OnDashUnlocked 等） ==========
+        eventBus.Subscribe<SkillUnlockedEvent>(OnSkillUnlockedViaEventBus);
+
+        // ========== 订阅装备变更事件（替代 inventory.OnWeaponEquiped 等） ==========
+        eventBus.Subscribe<EquipmentChangedEvent>(OnEquipmentChangedViaEventBus);
+
+        // ========== 订阅装备使用事件（替代 inventory.OnWeaponUsed 等） ==========
+        eventBus.Subscribe<EquipmentUsedEvent>(OnEquipmentUsedViaEventBus);
+    }
+
+    /// <summary>
+    /// 取消订阅事件（防止内存泄漏）
+    /// </summary>
+    private void OnDestroy()
+    {
+        if (eventBus != null)
+        {
+            eventBus.Unsubscribe<SkillUsedEvent>(OnSkillUsedViaEventBus);
+            eventBus.Unsubscribe<SkillUnlockedEvent>(OnSkillUnlockedViaEventBus);
+            eventBus.Unsubscribe<EquipmentChangedEvent>(OnEquipmentChangedViaEventBus);
+            eventBus.Unsubscribe<EquipmentUsedEvent>(OnEquipmentUsedViaEventBus);
+        }
+    }
+
+    /// <summary>
+    /// 通过事件总线处理技能使用 - Observer 响应（替代直接订阅）
+    /// </summary>
+    private void OnSkillUsedViaEventBus(SkillUsedEvent evt)
+    {
+        // 根据技能名称调用对应的UI更新方法
+        switch (evt.SkillName)
+        {
+            case "Dash":
+                UseDash();
+                break;
+            case "Crystal":
+                UseMultiCrystal();
+                break;
+            case "Assassinate":
+                UseAssassinate();
+                break;
+            case "DashAttack":
+                UseDashAttack();
+                break;
+            case "Blackhole":
+                UseBlackhole();
+                break;
+            case "CloneOnDash":
+                UseCloneOnDash();
+                break;
+            case "Parry":
+                UseParry();
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 通过事件总线处理技能解锁 - Observer 响应（替代直接订阅）
+    /// </summary>
+    private void OnSkillUnlockedViaEventBus(SkillUnlockedEvent evt)
+    {
+        // 根据技能名称调用对应的UI解锁方法
+        switch (evt.SkillName)
+        {
+            case "Dash":
+                UnlockDash();
+                break;
+            case "CloneOnDash":
+                UnlockCloneOnDash();
+                break;
+            case "DashAttack":
+                UnlockDashAttack();
+                break;
+            case "Parry":
+                UnlockParry();
+                break;
+            case "Assassinate":
+                UnlockAsssassinate();
+                break;
+            case "MultiCrystal":
+                UnlockMultiCrystal();
+                break;
+            case "Blackhole":
+                UnlockBlackhole();
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 通过事件总线处理装备变更 - Observer 响应（替代直接订阅）
+    /// </summary>
+    private void OnEquipmentChangedViaEventBus(EquipmentChangedEvent evt)
+    {
+        if (evt.IsEquipped)
+        {
+            // 装备事件
+            switch (evt.EquipmentType)
+            {
+                case EquipmentType.Weapon:
+                    EquipWeapon();
+                    break;
+                case EquipmentType.Armor:
+                    EquipArmor();
+                    break;
+                case EquipmentType.Amulet:
+                    EquipAmulet();
+                    break;
+                case EquipmentType.Flask:
+                    EquipFlask();
+                    break;
+            }
+        }
+        else
+        {
+            // 卸装事件
+            switch (evt.EquipmentType)
+            {
+                case EquipmentType.Weapon:
+                    UnequipWeapon();
+                    break;
+                case EquipmentType.Armor:
+                    UnequipedArmor();
+                    break;
+                case EquipmentType.Amulet:
+                    UnequipedAmulet();
+                    break;
+                case EquipmentType.Flask:
+                    UnEquipedFlask();
+                    break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 通过事件总线处理装备使用 - Observer 响应（替代直接订阅）
+    /// </summary>
+    private void OnEquipmentUsedViaEventBus(EquipmentUsedEvent evt)
+    {
+        // 调用对应的装备使用UI更新
+        switch (evt.EquipmentType)
+        {
+            case EquipmentType.Weapon:
+                UseWeapon();
+                break;
+            case EquipmentType.Armor:
+                UseArmor();
+                break;
+            case EquipmentType.Amulet:
+                UseAmulet();
+                break;
+            case EquipmentType.Flask:
+                UseFlask();
+                break;
+        }
     }
 
     /// <summary>
@@ -180,10 +307,10 @@ public class UI_InGame : MonoBehaviour
 
             int currentExp = playerManager.CurrentExperience;
             int currentLevel = playerManager.PlayerLevel;
-            
+
             float requiredExp = 200 * (currentLevel / 5 + 1);
             float fill = Mathf.Clamp01(currentExp / requiredExp);
-            
+
             experienceRing.fillAmount = fill;
         }
     }

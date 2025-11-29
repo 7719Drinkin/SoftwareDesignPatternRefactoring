@@ -5,7 +5,6 @@ public class NightBornBattleState : EnemyState
     private Enemy_NightBorn enemy;
     private Transform player;
     private int moveDir;
-    private IPlayerManager playerManager;
 
     private float assassinateTimer;
     private float emergencyTeleportCooldown;  // 紧急传送防重复触发计时器

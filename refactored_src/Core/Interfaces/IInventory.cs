@@ -24,19 +24,6 @@ public interface IInventory
     void UnlockJumpUseAmulet();
     void UnlockSwordUseAmulet();
 
-    event Action OnWeaponEquiped;
-    event Action OnArmorEquiped;
-    event Action OnAmuletEquiped;
-    event Action OnFlaskEquiped;
-    event Action OnWeaponUsed;
-    event Action OnArmorUsed;
-    event Action OnAmuletUsed;
-    event Action OnFlaskUsed;
-    event Action OnWeaponUnequiped;
-    event Action OnArmorUnequiped;
-    event Action OnAmuletUnequiped;
-    event Action OnFlaskUnequiped;
-
     bool DashUseAmulet { get; set; }
     bool JumpUseAmulet { get; set; }
     bool SwordUseAmulet { get; set; }

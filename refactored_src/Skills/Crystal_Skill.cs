@@ -32,9 +32,6 @@ public class Crystal_Skill : Skill
     [SerializeField] private UI_SkillTreeSlot multiUnlockButton;
     public bool canUseMultiStacks;
 
-    public event Action OnMultiCrystalUnlock;
-    public event Action OnMultiCrystalUsed;
-
     protected override void Start()
     {
         base.Start();
@@ -61,9 +58,10 @@ public class Crystal_Skill : Skill
         canMoveToEnemy = moveUnlockButton.unlocked;
         canUseMultiStacks = multiUnlockButton.unlocked;
 
-        // 同步触发事件，驱动 UI 立即更新
+        // 同步触发事件，驱动 UI 立即更新（从存档加载时）
+        var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
         if (canUseMultiStacks)
-            OnMultiCrystalUnlock?.Invoke();
+            eventBus?.Publish(new SkillUnlockedEvent { SkillName = "MultiCrystal" });
     }
 
     public override void UseSkill()
@@ -128,7 +126,13 @@ public class Crystal_Skill : Skill
                     cooldown = multiStackCooldown;
                     RefillCrystal();
 
-                    OnMultiCrystalUsed?.Invoke();
+                    // ========== 发布到事件总线（Observer Pattern） ==========
+                    var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
+                    eventBus?.Publish(new SkillUsedEvent
+                    {
+                        SkillName = "Crystal",
+                        Cooldown = multiStackCooldown
+                    });
                 }
 
                 return true;
@@ -154,7 +158,13 @@ public class Crystal_Skill : Skill
         cooldownTimer = multiStackCooldown;
         RefillCrystal();
 
-        OnMultiCrystalUsed?.Invoke();
+        // ========== 发布到事件总线（Observer Pattern） ==========
+        var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
+        eventBus?.Publish(new SkillUsedEvent
+        {
+            SkillName = "Crystal",
+            Cooldown = multiStackCooldown
+        });
     }
 
     private void UnlockCrystal()
@@ -194,7 +204,13 @@ public class Crystal_Skill : Skill
         if (multiUnlockButton.CanUnlockSkillSlot() && multiUnlockButton.unlocked)
         {
             canUseMultiStacks = true;
-            OnMultiCrystalUnlock?.Invoke();
+            
+            // ========== 发布技能解锁事件到事件总线（Observer Pattern） ==========
+            var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
+            eventBus?.Publish(new SkillUnlockedEvent
+            {
+                SkillName = "MultiCrystal"
+            });
         }
     }
 }

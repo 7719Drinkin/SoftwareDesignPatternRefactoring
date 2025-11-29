@@ -8,8 +8,6 @@ public class PlayerDashState : PlayerState
     private float afterImageTimer;
     private float afterImageCooldown = 0.03f;
 
-    public event Action OnCloneOnDashUsed;
-
     public PlayerDashState(Player _player, PlayerStateMachine _stateMachine, string animBoolName) : base(_player, _stateMachine, animBoolName)
     {
 
@@ -43,7 +41,15 @@ public class PlayerDashState : PlayerState
         if (canCreateClone)
         {
             player.skill.Clone.CreateCloneOnDashOver();
-            OnCloneOnDashUsed?.Invoke();
+            
+            // ========== 发布技能使用事件到事件总线（Observer Pattern） ==========
+            var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
+            eventBus?.Publish(new SkillUsedEvent
+            {
+                SkillName = "CloneOnDash",
+                Cooldown = player.skill.Clone.cooldown
+            });
+            
             canCreateClone = false;
         }
 

@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class PlayerCounterAttackState : PlayerState
 {
-    public event Action OnParryUsed;
 
     public PlayerCounterAttackState(Player _player, PlayerStateMachine _stateMachine, string animBoolName) : base(_player, _stateMachine, animBoolName)
     {
@@ -18,7 +17,13 @@ public class PlayerCounterAttackState : PlayerState
 
         player.anim.SetBool("SuccessfulCounterAttack", false);
 
-        OnParryUsed?.Invoke();
+        // ========== 发布技能使用事件到事件总线（Observer Pattern） ==========
+        var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
+        eventBus?.Publish(new SkillUsedEvent
+        {
+            SkillName = "Parry",
+            Cooldown = player.skill.Parry.cooldown
+        });
     }
 
     public override void Exit()

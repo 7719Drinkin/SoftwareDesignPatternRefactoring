@@ -23,6 +23,7 @@ public class FlaskCommand : ISkillCommand
             
             if (currentFlask != null)
             {
+                // 执行装备效果
                 currentFlask.ExecuteItemEffect(playerTransform);
             }
         }

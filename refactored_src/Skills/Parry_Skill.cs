@@ -12,8 +12,6 @@ public class Parry_Skill : Skill
     public bool fightBack;
     [SerializeField] private UI_SkillTreeSlot fightBackUnlockButton;
 
-    public event Action OnUnlockParry;
-
     protected override void Start()
     {
         base.Start();
@@ -34,8 +32,10 @@ public class Parry_Skill : Skill
         parry = parryUnlockButton.unlocked;
         fightBack = fightBackUnlockButton.unlocked;
 
+        // 从存档加载时触发事件
+        var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
         if (parry)
-            OnUnlockParry?.Invoke();
+            eventBus?.Publish(new SkillUnlockedEvent { SkillName = "Parry" });
     }
 
     private void UnlockParry()
@@ -43,7 +43,13 @@ public class Parry_Skill : Skill
         if (parryUnlockButton.CanUnlockSkillSlot() && parryUnlockButton.unlocked)
         {
             parry = true;
-            OnUnlockParry?.Invoke();
+            
+            // ========== 发布技能解锁事件到事件总线（Observer Pattern） ==========
+            var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
+            eventBus?.Publish(new SkillUnlockedEvent
+            {
+                SkillName = "Parry"
+            });
         }
     }
 

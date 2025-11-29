@@ -107,6 +107,11 @@ public class GameBootstrap : MonoBehaviour
         // 掉落物管理器（通过接口注册）
         if (droppedItemManager != null)
             ServiceLocator.Instance.RegisterSingleton<IDroppedItemManager>(droppedItemManager);
+
+        // ========== 阶段2：注册事件系统 ==========
+        // 游戏事件总线（Observer Pattern）
+        GameEventBus eventBus = new GameEventBus();
+        ServiceLocator.Instance.RegisterSingleton<GameEventBus>(eventBus);
     }
 
     /// <summary>

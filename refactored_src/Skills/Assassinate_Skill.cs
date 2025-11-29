@@ -8,9 +8,6 @@ public class Assassinate_Skill : Skill
     public bool assassinate;
     [SerializeReference] private UI_SkillTreeSlot assassinateUnlockButton;
 
-    public event Action OnAssassinateUnlock;
-    public event Action OnAssassinateUsed;
-
     protected override void Start()
     {
         base.Start();
@@ -29,9 +26,10 @@ public class Assassinate_Skill : Skill
         // 根据技能槽的解锁状态初始化技能状态
         assassinate = assassinateUnlockButton.unlocked;
 
-        // 同步触发事件，驱动 UI 立即更新
+        // 同步触发事件，驱动 UI 立即更新（从存档加载时）
+        var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
         if (assassinate)
-            OnAssassinateUnlock?.Invoke();
+            eventBus?.Publish(new SkillUnlockedEvent { SkillName = "Assassinate" });
     }
 
     public override void UseSkill()
@@ -40,7 +38,13 @@ public class Assassinate_Skill : Skill
 
         MoveToEnemy();
 
-        OnAssassinateUsed?.Invoke();
+        // ========== 发布到事件总线（Observer Pattern） ==========
+        var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
+        eventBus?.Publish(new SkillUsedEvent
+        {
+            SkillName = "Assassinate",
+            Cooldown = cooldown
+        });
     }
 
     private void MoveToEnemy()
@@ -82,7 +86,13 @@ public class Assassinate_Skill : Skill
         if (assassinateUnlockButton.CanUnlockSkillSlot() && assassinateUnlockButton.unlocked)
         {
             assassinate = true;
-            OnAssassinateUnlock?.Invoke();
+            
+            // ========== 发布技能解锁事件到事件总线（Observer Pattern） ==========
+            var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
+            eventBus?.Publish(new SkillUnlockedEvent
+            {
+                SkillName = "Assassinate"
+            });
         }
     }
 }

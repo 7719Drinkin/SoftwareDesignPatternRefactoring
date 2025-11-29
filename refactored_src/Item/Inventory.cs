@@ -41,6 +41,7 @@ public class Inventory : MonoBehaviour, ISaveManager, IInventory
     private float lastTimeUseAmulet;                        // 上次使用护身符时间
     private float lastTimeUseFlask;                         // 上次使用药水时间
 
+    #region 与护身符相关的技能解锁
     [Header("Use amulet")]
     [SerializeField] private bool dashUseAmulet;
     [SerializeField] private bool jumpUseAmulet;
@@ -50,37 +51,24 @@ public class Inventory : MonoBehaviour, ISaveManager, IInventory
     public bool JumpUseAmulet { get => jumpUseAmulet; set => jumpUseAmulet = value; }
     public bool SwordUseAmulet { get => swordUseAmulet; set => swordUseAmulet = value; }
 
-    // 装备事件
-    public event Action OnWeaponEquiped;                    // 武器装备事件
-    public event Action OnArmorEquiped;                     // 护甲装备事件
-    public event Action OnAmuletEquiped;                    // 护身符装备事件
-    public event Action OnFlaskEquiped;                     // 药水装备事件
-
-    // 卸装事件
-    public event Action OnWeaponUnequiped;                 // 武器卸装事件
-    public event Action OnArmorUnequiped;                  // 护甲卸装事件
-    public event Action OnAmuletUnequiped;                 // 护身符卸装事件
-    public event Action OnFlaskUnequiped;                  // 药水卸装事件
-
-    // 使用事件
-    public event Action OnWeaponUsed;                       // 武器使用事件
-    public event Action OnArmorUsed;                       // 护甲使用事件
-    public event Action OnAmuletUsed;                      // 护身符使用事件
-    public event Action OnFlaskUsed;                       // 药水使用事件
-
     [SerializeField] private UI_SkillTreeSlot dashUseAmuletUnlockButton;   // 冲刺护身符解锁按钮
     [SerializeField] private UI_SkillTreeSlot jumpUseAmuletUnlockButton;     // 跳跃护身符解锁按钮
     [SerializeField] private UI_SkillTreeSlot swordUseAmuletUnlockButton;  // 剑攻击护身符解锁按钮
+
+    #endregion
 
     [Header("Database")]
     public List<InventoryItem> loadedItems;
     public List<ItemData_Equipment> loadedEquipment;
 
+    private GameEventBus eventBus;
+
     private void Start()
     {
         // 获取服务依赖
         audioManager = ServiceLocator.Instance.Get<IAudioManager>();
-        
+        eventBus = ServiceLocator.Instance.Get<GameEventBus>();
+
         // 初始化字典和列表
         inventory = new List<InventoryItem>();
         inventoryDictionary = new Dictionary<ItemData, InventoryItem>();
@@ -112,6 +100,21 @@ public class Inventory : MonoBehaviour, ISaveManager, IInventory
 
         // 延迟初始化，确保保存系统已经加载完成
         StartCoroutine(DelayedInitialization());
+    }
+
+    /// <summary>
+    /// 延迟初始化协程
+    /// </summary>
+    /// <returns></returns>
+    private System.Collections.IEnumerator DelayedInitialization()
+    {
+        // 等待一帧，确保所有保存数据都已加载
+        yield return null;
+
+        // 根据技能槽的解锁状态初始化护身符使用状态
+        dashUseAmulet = dashUseAmuletUnlockButton.unlocked;
+        jumpUseAmulet = jumpUseAmuletUnlockButton.unlocked;
+        swordUseAmulet = swordUseAmuletUnlockButton.unlocked;
     }
 
     /// <summary>
@@ -171,23 +174,27 @@ public class Inventory : MonoBehaviour, ISaveManager, IInventory
         newEquipment.AddModifiers();
         RemoveItem(_item);
 
-        // 触发装备事件
+        // ========== 发布装备变更事件到事件总线（Observer Pattern） ==========
+        eventBus?.Publish(new EquipmentChangedEvent
+        {
+            EquipmentType = newEquipment.equipmentType,
+            Equipment = newEquipment,
+            IsEquipped = true
+        });
+
+        // 重置装备使用冷却时间
         switch (newEquipment.equipmentType)
         {
             case EquipmentType.Weapon:
-                OnWeaponEquiped?.Invoke();
                 lastTimeUseWeapon = -100;
                 break;
             case EquipmentType.Armor:
-                OnArmorEquiped?.Invoke();
                 lastTimeUseArmor = -100;
                 break;
             case EquipmentType.Amulet:
-                OnAmuletEquiped?.Invoke();
                 lastTimeUseAmulet = -100;
                 break;
             case EquipmentType.Flask:
-                OnFlaskEquiped?.Invoke();
                 lastTimeUseFlask = -100;
                 break;
         }
@@ -207,22 +214,13 @@ public class Inventory : MonoBehaviour, ISaveManager, IInventory
             equipmentDictionary.Remove(itemToRemove);
             itemToRemove.RemoveModifiers();
 
-            // 触发卸装事件
-            switch (itemToRemove.equipmentType)
+            // ========== 发布装备变更事件到事件总线（Observer Pattern） ==========
+            eventBus?.Publish(new EquipmentChangedEvent
             {
-                case EquipmentType.Weapon:
-                    OnWeaponUnequiped?.Invoke();
-                    break;
-                case EquipmentType.Armor:
-                    OnArmorUnequiped?.Invoke();
-                    break;
-                case EquipmentType.Amulet:
-                    OnAmuletUnequiped?.Invoke();
-                    break;
-                case EquipmentType.Flask:
-                    OnFlaskUnequiped?.Invoke();
-                    break;
-            }
+                EquipmentType = itemToRemove.equipmentType,
+                Equipment = itemToRemove,
+                IsEquipped = false
+            });
         }
     }
 
@@ -431,7 +429,12 @@ public class Inventory : MonoBehaviour, ISaveManager, IInventory
         if (currentWeapon != null)
         {
             lastTimeUseWeapon = Time.time;
-            OnWeaponUsed?.Invoke();
+
+            // ========== 发布装备使用事件（Observer Pattern） ==========
+            eventBus?.Publish(new EquipmentUsedEvent
+            {
+                EquipmentType = EquipmentType.Weapon
+            });
         }
     }
 
@@ -450,7 +453,12 @@ public class Inventory : MonoBehaviour, ISaveManager, IInventory
         if (canUseArmor)
         {
             lastTimeUseArmor = Time.time;
-            OnArmorUsed?.Invoke();
+
+            // ========== 发布装备使用事件（Observer Pattern） ==========
+            eventBus?.Publish(new EquipmentUsedEvent
+            {
+                EquipmentType = EquipmentType.Armor
+            });
         }
 
         return canUseArmor;
@@ -471,7 +479,12 @@ public class Inventory : MonoBehaviour, ISaveManager, IInventory
         if (canUseAmulet)
         {
             lastTimeUseAmulet = Time.time;
-            OnAmuletUsed?.Invoke();
+
+            // ========== 发布装备使用事件（Observer Pattern） ==========
+            eventBus?.Publish(new EquipmentUsedEvent
+            {
+                EquipmentType = EquipmentType.Amulet
+            });
         }
 
         return canUseAmulet;
@@ -492,8 +505,13 @@ public class Inventory : MonoBehaviour, ISaveManager, IInventory
         if (canUseFlask)
         {
             lastTimeUseFlask = Time.time;
-            OnFlaskUsed?.Invoke();
             audioManager.PlaySFX(38); // 药水使用音效
+
+            // ========== 发布装备使用事件（Observer Pattern） ==========
+            eventBus?.Publish(new EquipmentUsedEvent
+            {
+                EquipmentType = EquipmentType.Flask
+            });
         }
 
         return canUseFlask;
@@ -609,20 +627,5 @@ public class Inventory : MonoBehaviour, ISaveManager, IInventory
         }
 
         return itemDatabase;
-    }
-
-    /// <summary>
-    /// 延迟初始化协程
-    /// </summary>
-    /// <returns></returns>
-    private System.Collections.IEnumerator DelayedInitialization()
-    {
-        // 等待一帧，确保所有保存数据都已加载
-        yield return null;
-
-        // 根据技能槽的解锁状态初始化护身符使用状态
-        dashUseAmulet = dashUseAmuletUnlockButton.unlocked;
-        jumpUseAmulet = jumpUseAmuletUnlockButton.unlocked;
-        swordUseAmulet = swordUseAmuletUnlockButton.unlocked;
     }
 }

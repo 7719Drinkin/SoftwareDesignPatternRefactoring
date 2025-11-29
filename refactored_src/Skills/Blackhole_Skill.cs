@@ -18,9 +18,6 @@ public class Blackhole_Skill : Skill
 
     private Blackhole_Skill_Controller currentBlackhole;
 
-    public event Action OnBlackholeUnlock;
-    public event Action OnBlackholeUsed;
-
     protected override void Start()
     {
         base.Start();
@@ -39,8 +36,10 @@ public class Blackhole_Skill : Skill
         // 根据技能槽的解锁状态初始化技能状态
         blackhole = blackholeUnlockButton.unlocked;
 
+        // 从存档加载时触发事件
+        var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
         if (blackhole)
-            OnBlackholeUnlock?.Invoke();
+            eventBus?.Publish(new SkillUnlockedEvent { SkillName = "Blackhole" });
     }
 
     public void CreateBlackhole()
@@ -62,7 +61,14 @@ public class Blackhole_Skill : Skill
             currentBlackhole = null;
 
             cooldownTimer = cooldown;
-            OnBlackholeUsed?.Invoke();
+
+            // ========== 发布到事件总线（Observer Pattern） ==========
+            var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
+            eventBus?.Publish(new SkillUsedEvent
+            {
+                SkillName = "Blackhole",
+                Cooldown = cooldown
+            });
 
             return true;
         }
@@ -80,7 +86,13 @@ public class Blackhole_Skill : Skill
         if (blackholeUnlockButton.CanUnlockSkillSlot() && blackholeUnlockButton.unlocked)
         {
             blackhole = true;
-            OnBlackholeUnlock?.Invoke();
+            
+            // ========== 发布技能解锁事件到事件总线（Observer Pattern） ==========
+            var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
+            eventBus?.Publish(new SkillUnlockedEvent
+            {
+                SkillName = "Blackhole"
+            });
         }
     }
 }

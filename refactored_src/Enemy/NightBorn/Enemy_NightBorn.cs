@@ -71,7 +71,7 @@ public class Enemy_NightBorn : Enemy
         }
 
         // 共享冷却时间：冷却结束时随机触发 gather、wave 或魔法阵
-        if (sharedSkillTimer < 0 && stateMachine.currentState == battleState && !canAssassinate)
+        if (sharedSkillTimer < 0 && stateMachine.currentState == battleState && !canAssassinate && !isStunned)
         {
             Transform playerTf = playerManager != null ? playerManager.Player.transform : null;
             if (playerTf != null)
