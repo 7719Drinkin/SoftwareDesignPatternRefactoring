@@ -14,7 +14,7 @@ public class PlayerDashAttackState : PlayerState
 
         player.ZeroVelocity();
 
-        AudioManager.instance.PlaySFX(0);
+        audioManager.PlaySFX(0);
     }
 
     public override void Exit()

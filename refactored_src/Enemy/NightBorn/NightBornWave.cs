@@ -7,13 +7,17 @@ public class NightBornWave : MonoBehaviour
     private Transform playerTf;
     private Enemy_NightBorn enemy;
     private Rigidbody2D rb;
+    private IPlayerManager playerManager;
+    private IAudioManager audioManager;
 
     [SerializeField] private ElementType elementType;
     [SerializeField] private float speed = 12f;
 
     void Start()
     {
-        playerTf = PlayerManager.instance.player.transform;
+        playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
+        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
+        playerTf = playerManager.Player.transform;
         enemy = FindObjectOfType<Enemy_NightBorn>();
         rb = GetComponent<Rigidbody2D>();
         
@@ -27,9 +31,16 @@ public class NightBornWave : MonoBehaviour
     {
         if (collision.GetComponent<Player>() != null)
         {
-            if (PlayerManager.instance.player.stateMachine.currentState != PlayerManager.instance.player.counterAttack)
-                enemy.stats.DoMagicalDamage(PlayerManager.instance.player.stats, enemy.transform, elementType);
+            // 如果玩家在格挡状态，wave 直接消失
+            if (playerManager.Player.stateMachine.currentState == playerManager.Player.counterAttack)
+            {
+                SelfDestroy();
+                audioManager.PlaySFX(5);
+                return;
+            }
 
+            // 玩家未格挡，造成伤害
+            enemy.stats.DoMagicalDamage(playerManager.Player.stats, enemy.transform, elementType);
             SelfDestroy();
         }
     }

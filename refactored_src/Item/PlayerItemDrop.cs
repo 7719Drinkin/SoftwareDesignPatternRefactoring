@@ -8,7 +8,7 @@ public class PlayerItemDrop : ItemDrop
 
     public override void GenerateDrop()
     {
-        Inventory inventory = Inventory.instance;
+        IInventory inventory = ServiceLocator.Instance.Get<IInventory>();
 
         List<InventoryItem> currentEquipment = new List<InventoryItem>(inventory.GetEquipmentList());
 

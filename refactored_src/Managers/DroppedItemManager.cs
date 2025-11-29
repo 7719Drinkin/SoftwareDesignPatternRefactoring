@@ -1,10 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DroppedItemManager : MonoBehaviour, ISaveManager
+public class DroppedItemManager : MonoBehaviour, ISaveManager, IDroppedItemManager
 {
-    public static DroppedItemManager instance;
-
     [SerializeField] private GameObject itemObjectPrefab;
     [SerializeField] private GameObject experienceObjectPrefab;
 
@@ -16,13 +14,6 @@ public class DroppedItemManager : MonoBehaviour, ISaveManager
 
     private void Awake()
     {
-        if (instance != null && instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        instance = this;
-
         // 初始化物品数据库缓存
         InitializeItemDatabaseCache();
     }

@@ -8,10 +8,12 @@ public class ThunderStrike_Controller : MonoBehaviour
 
     private Animator anim;
     private bool triggered;
+    private IAudioManager audioManager;
 
     private void Start()
     {
         anim = GetComponentInChildren<Animator>();
+        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
     }
 
     private void Update()
@@ -31,7 +33,7 @@ public class ThunderStrike_Controller : MonoBehaviour
 
             triggered = true;
             targetStats.TakeDamage(damage, transform, true, true);
-            AudioManager.instance.PlaySFX(18);
+            audioManager.PlaySFX(18);
             targetStats.ApplyShock(true);
             anim.SetTrigger("Hit");
             Destroy(gameObject, 0.6f);

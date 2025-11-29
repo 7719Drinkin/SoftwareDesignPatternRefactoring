@@ -13,24 +13,28 @@ public class Enemy_Skeleton : Enemy
 
     #endregion
 
+    private SkeletonStates skeletonStates;
+
     protected override void Awake()
     {
         base.Awake();
 
-        idleState = new SkeletonIdleState(this, stateMachine, "Idle", this);
-        moveState = new SkeletonMoveState(this, stateMachine, "Move", this);
-        battleState = new SkeletonBattleState(this, stateMachine, "Move", this);
-        attackState = new SkeletonAttackState(this, stateMachine, "Attack", this);
-        stunnedState = new SkeletonStunnedState(this, stateMachine, "Stunned", this);
-        deadState = new SkeletonDeadState(this, stateMachine, "Die", this);
-        blockedState = new SkeletonBlockedState(this, stateMachine, "Blocked", this);
+        skeletonStates = new SkeletonStateFactory().CreateStates(this, stateMachine);
+
+        idleState = skeletonStates.Idle;
+        moveState = skeletonStates.Move;
+        battleState = skeletonStates.Battle;
+        attackState = skeletonStates.Attack;
+        stunnedState = skeletonStates.Stunned;
+        deadState = skeletonStates.Dead;
+        blockedState = skeletonStates.Blocked;
     }
 
     protected override void Start()
     {
         base.Start();
 
-        stateMachine.Initialize(idleState);
+        stateMachine.Initialize(skeletonStates.InitialState);
 
         CloseCounterAttackWindow();
         discoverImage.SetActive(false);

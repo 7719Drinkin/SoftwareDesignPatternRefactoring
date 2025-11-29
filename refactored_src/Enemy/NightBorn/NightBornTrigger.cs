@@ -1,11 +1,20 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class NightBornTrigger : MonoBehaviour
 {
+    [SerializeField] private GameObject tilemapBlock;
+
     [SerializeField] private Enemy_NightBorn nightBorn;
     [SerializeField] private float battleStartDelay = 1.5f;
     private bool triggered;
+    private IAudioManager audioManager;
+
+    private void Awake()
+    {
+        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
+    }
 
     private void OnTriggerEnter2D(Collider2D collider)
     {
@@ -18,6 +27,8 @@ public class NightBornTrigger : MonoBehaviour
 
             if (nightBorn != null)
                 StartCoroutine(EnterBattleAfterDelay());
+
+            StartCoroutine(SetBlockActive());
         }
     }
 
@@ -29,7 +40,14 @@ public class NightBornTrigger : MonoBehaviour
         if (nightBorn != null)
             nightBorn.stateMachine.ChangeState(nightBorn.battleState);
 
-        AudioManager.instance.PlaySFX(55);
-        AudioManager.instance.PlayBGM(2);
+        audioManager.PlaySFX(55);
+        audioManager.PlayBGM(2);
+    }
+
+    private IEnumerator SetBlockActive()
+    {
+        yield return new WaitForSeconds(3);
+
+        tilemapBlock.SetActive(true);
     }
 }

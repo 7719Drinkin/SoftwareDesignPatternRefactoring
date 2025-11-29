@@ -22,6 +22,10 @@ public class CharacterStats : MonoBehaviour
 {
     private EntityFX fx;                                   // 特效组件
 
+    // ========== 服务依赖 ==========
+    protected IPlayerManager playerManager;
+    protected IAudioManager audioManager;
+
     [Header("Level details")]
     public Stat level;                                     // 等级
 
@@ -86,6 +90,10 @@ public class CharacterStats : MonoBehaviour
 
         critPower.SetDefaultValue(150);
         currentHealth = GetMaxHealthValue();
+
+        // 通过ServiceLocator获取依赖
+        playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
+        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
     }
 
     /// <summary>
@@ -410,7 +418,7 @@ public class CharacterStats : MonoBehaviour
         if (closestEnemy != null)
         {
             GameObject newThunderStrike = Instantiate(shockStrikePrefab, transform.position, Quaternion.identity);
-            newThunderStrike.GetComponent<ThunderStrike_Controller>().Setup(shockDamage + 3 * PlayerManager.instance.player.stats.intelligence.GetValue(), closestEnemy.GetComponent<CharacterStats>());
+            newThunderStrike.GetComponent<ThunderStrike_Controller>().Setup(shockDamage + 3 * playerManager.Player.stats.intelligence.GetValue(), closestEnemy.GetComponent<CharacterStats>());
         }
     }
 

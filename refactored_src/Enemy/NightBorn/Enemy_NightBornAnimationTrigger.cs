@@ -3,6 +3,12 @@ using UnityEngine;
 public class Enemy_NightBornAnimationTrigger : MonoBehaviour
 {
     private Enemy_NightBorn enemy => GetComponentInParent<Enemy_NightBorn>();
+    private IAudioManager audioManager;
+
+    private void Awake()
+    {
+        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
+    }
 
     private void AnimationTrigger()
     {
@@ -22,7 +28,7 @@ public class Enemy_NightBornAnimationTrigger : MonoBehaviour
             }
         }
 
-        AudioManager.instance.PlaySFX(48);
+        audioManager.PlaySFX(48);
     }
 
     private void OpenCounterWindow() => enemy.OpenCounterAttackWindow();

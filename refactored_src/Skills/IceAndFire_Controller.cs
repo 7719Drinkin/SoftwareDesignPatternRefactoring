@@ -6,7 +6,8 @@ public class IceAndFire_Controller : MonoBehaviour
     {
         if (collision.GetComponent<Enemy>() != null)
         {
-            PlayerStats playerStats = PlayerManager.instance.player.GetComponent<PlayerStats>();
+            IPlayerManager playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
+            PlayerStats playerStats = playerManager.Player.GetComponent<PlayerStats>();
             EnemyStats enemyTarget = collision.GetComponent<EnemyStats>();
             playerStats.DoMagicalDamage(enemyTarget, transform);
         }

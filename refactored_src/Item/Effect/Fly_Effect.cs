@@ -11,10 +11,11 @@ public class Fly_Effect : ItemEffect
 
     public override bool ExecuteEffect(Transform position)
     {
-        if (PlayerManager.instance.player != null)
+        var playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
+        if (playerManager.Player != null)
         {
-            PlayerManager.instance.player.StartCoroutine(SpeedBoostEffect());
-            AudioManager.instance.PlaySFX(41);
+            playerManager.Player.StartCoroutine(SpeedBoostEffect());
+            ServiceLocator.Instance.Get<IAudioManager>().PlaySFX(41);
             return true; // 速度提升效果执行成功
         }
 
@@ -23,7 +24,7 @@ public class Fly_Effect : ItemEffect
 
     private IEnumerator SpeedBoostEffect()
     {
-        Player player = PlayerManager.instance.player;
+        Player player = ServiceLocator.Instance.Get<IPlayerManager>().Player;
         float originalSpeed = player.moveSpeed;
         float originalJumpForce = player.jumpForce;
 

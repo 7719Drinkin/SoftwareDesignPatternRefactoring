@@ -11,12 +11,18 @@ public class Skill : MonoBehaviour
     protected float cooldownTimer;                        // 冷却计时器
     protected Player player;                              // 玩家引用
 
+    // ========== 服务依赖 ==========
+    protected IPlayerManager playerManager;
+    protected IAudioManager audioManager;
+
     /// <summary>
     /// 初始化技能
     /// </summary>
     protected virtual void Start()
     {
-        player = PlayerManager.instance.player;
+        playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
+        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
+        player = playerManager.Player;
 
         cooldownTimer = -100;
     }

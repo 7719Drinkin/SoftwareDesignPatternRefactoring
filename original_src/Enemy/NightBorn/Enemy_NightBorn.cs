@@ -14,6 +14,8 @@ public class Enemy_NightBorn : Enemy
 
     #endregion
 
+    private NightBornStates nightBornStates;
+
     public float assassinateCooldown;
     [Header("Shared Skill Cooldown")]
     public float sharedSkillCooldown = 10f;  // gather、wave、魔法阵共享冷却时间
@@ -32,21 +34,23 @@ public class Enemy_NightBorn : Enemy
     {
         base.Awake();
 
-        moveState = new NightBornMoveState(this, stateMachine, "Move", this);
-        battleState = new NightBornBattleState(this, stateMachine, "Move", this);
-        attackState = new NightBornAttackState(this, stateMachine, "Attack", this);
-        blockedState = new NightBornBlockedState(this, stateMachine, "Blocked", this);
-        stunnedState = new NightBornStunnedState(this, stateMachine, "Stunned", this);
-        deadState = new NightBornDeadState(this, stateMachine, "Dead", this);
-        gatherState = new NightBornGatherState(this, stateMachine, "Gather", this);
-        waveState = new NightBornWaveState(this, stateMachine, "Wave", this);
+        nightBornStates = new NightBornStatesFactory().CreateStates(this, stateMachine);
+
+        moveState = nightBornStates.Move;
+        battleState = nightBornStates.Battle;
+        attackState = nightBornStates.Attack;
+        blockedState = nightBornStates.Blocked;
+        stunnedState = nightBornStates.Stunned;
+        deadState = nightBornStates.Dead;
+        gatherState = nightBornStates.Gather;
+        waveState = nightBornStates.Wave;
     }
 
     protected override void Start()
     {
         base.Start();
 
-        stateMachine.Initialize(moveState);
+        stateMachine.Initialize(nightBornStates.InitialState);
 
         sharedSkillTimer = sharedSkillCooldown;
 

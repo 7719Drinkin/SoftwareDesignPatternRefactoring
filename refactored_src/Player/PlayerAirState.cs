@@ -39,7 +39,7 @@ public class PlayerAirState : PlayerState
             player.continousJump--;
             player.SetVelocity(rb.velocity.x, player.jumpForce * 0.8f);
 
-            AudioManager.instance.PlaySFX(14);
+            audioManager.PlaySFX(14);
         }
 
         jumpTimer -= Time.deltaTime;

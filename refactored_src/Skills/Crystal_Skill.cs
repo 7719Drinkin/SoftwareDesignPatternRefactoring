@@ -81,11 +81,11 @@ public class Crystal_Skill : Skill
             Vector2 playerPos = player.transform.position;
             player.transform.position = currentCrystal.transform.position;
             currentCrystal.transform.position = playerPos;
-            AudioManager.instance.PlaySFX(30);
+            audioManager.PlaySFX(30);
 
             if (createMirage)
             {
-                SkillManager.instance.clone.CreateClone(currentCrystal.transform, Vector3.zero);
+                ServiceLocator.Instance.Get<ISkillManager>().Clone.CreateClone(currentCrystal.transform, Vector3.zero);
                 Destroy(currentCrystal);
             }
             else
@@ -99,7 +99,7 @@ public class Crystal_Skill : Skill
     {
         currentCrystal = Instantiate(crystalPrefab, player.transform.position, Quaternion.identity);
         Crystal_Skill_Controller currentCrystalScript = currentCrystal.GetComponent<Crystal_Skill_Controller>();
-        AudioManager.instance.PlaySFX(31);
+        audioManager.PlaySFX(31);
         currentCrystalScript.SetupCrystal(crystalDuration, canExplode, canMoveToEnemy, moveSpeed, FindClosetEnemy(currentCrystal.transform), player);
     }
 
@@ -117,7 +117,7 @@ public class Crystal_Skill : Skill
                 cooldown = 0;
                 GameObject crystalToSpawn = crystalLeft[crystalLeft.Count - 1];
                 GameObject newCrystal = Instantiate(crystalToSpawn, player.transform.position, Quaternion.identity);
-                AudioManager.instance.PlaySFX(31);
+                audioManager.PlaySFX(31);
 
                 crystalLeft.Remove(crystalToSpawn);
 

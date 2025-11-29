@@ -7,6 +7,11 @@ public class PlayerState
 
     protected Rigidbody2D rb;
 
+    // ========== 服务依赖（所有子类共享） ==========
+    protected IAudioManager audioManager;
+    protected IInventory inventory;
+    protected ISaveManagerService saveManager;
+
     protected float xInput;
     protected float yInput;
     private string animBoolName;
@@ -26,6 +31,14 @@ public class PlayerState
         player.anim.SetBool(animBoolName, true);
         rb = player.rb;
         triggerCalled = false;
+
+        // 初始化服务（延迟初始化，按需获取）
+        if (audioManager == null)
+            audioManager = ServiceLocator.Instance.Get<IAudioManager>();
+        if (inventory == null)
+            inventory = ServiceLocator.Instance.Get<IInventory>();
+        if (saveManager == null)
+            saveManager = ServiceLocator.Instance.Get<ISaveManagerService>();
     }
 
     public virtual void Update()

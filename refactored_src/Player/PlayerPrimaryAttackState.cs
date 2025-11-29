@@ -25,15 +25,15 @@ public class PlayerPrimaryAttackState : PlayerState
         {
             case 0:
                 player.attackCheckRadius = player.firstAttackCheckRadius;
-                AudioManager.instance.PlaySFX(1);
+                audioManager.PlaySFX(1);
                 break;
             case 1:
                 player.attackCheckRadius = player.secondAttackCheckRadius;
-                AudioManager.instance.PlaySFX(2);
+                audioManager.PlaySFX(2);
                 break;
             case 2:
                 player.attackCheckRadius = player.thirdAttackCheckRadius;
-                AudioManager.instance.PlaySFX(3);
+                audioManager.PlaySFX(3);
                 break;
         }
 

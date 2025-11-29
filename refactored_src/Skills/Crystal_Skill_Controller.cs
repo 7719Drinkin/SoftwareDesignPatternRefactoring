@@ -6,6 +6,7 @@ public class Crystal_Skill_Controller : MonoBehaviour
     private CircleCollider2D cd => GetComponent<CircleCollider2D>();
 
     private float crystalExistTimer;
+    private IAudioManager audioManager;
 
     private bool canExplode;
     private bool canMove;
@@ -20,6 +21,8 @@ public class Crystal_Skill_Controller : MonoBehaviour
 
     public void SetupCrystal(float _crystalDuration, bool _canExplode, bool _canMove, float _moveSpeed, Transform _closestEnemy, Player _player)
     {
+        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
+        
         crystalExistTimer = _crystalDuration;
         canExplode = _canExplode;
         canMove = _canMove;
@@ -30,7 +33,7 @@ public class Crystal_Skill_Controller : MonoBehaviour
 
     public void ChooseRandomEnemy()
     {
-        float radius = SkillManager.instance.blackhole.GetBlackholeRadius();
+        float radius = ServiceLocator.Instance.Get<ISkillManager>().Blackhole.GetBlackholeRadius();
 
         Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, radius, whatIsEnemy);
 
@@ -71,14 +74,14 @@ public class Crystal_Skill_Controller : MonoBehaviour
             {
                 player.stats.DoMagicalDamage(hit.GetComponent<CharacterStats>(), transform);
 
-                ItemData_Equipment equipedAmulet = Inventory.instance.GetEquipment(EquipmentType.Amulet);
+                ItemData_Equipment equipedAmulet = ServiceLocator.Instance.Get<IInventory>().GetEquipment(EquipmentType.Amulet);
 
-                if (equipedAmulet != null && Inventory.instance.CanUseAmulet())
+                if (equipedAmulet != null && ServiceLocator.Instance.Get<IInventory>().CanUseAmulet())
                     equipedAmulet.ExecuteItemEffect(hit.transform);
             }
         }
 
-        AudioManager.instance.PlaySFX(13);
+        audioManager.PlaySFX(13);
     }
 
     public void FinishCrystal()

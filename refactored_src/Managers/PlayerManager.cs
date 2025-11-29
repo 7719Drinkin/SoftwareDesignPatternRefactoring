@@ -1,32 +1,36 @@
 using UnityEngine;
+using System;
 
 /// <summary>
 /// 玩家管理器 - 管理玩家的核心数据
 /// 负责货币、经验值、等级系统和存档管理
 /// 实现ISaveManager接口，支持玩家数据的保存和加载
 /// </summary>
-public class PlayerManager : MonoBehaviour, ISaveManager
+public class PlayerManager : MonoBehaviour, ISaveManager, IPlayerManager
 {
-    public static PlayerManager instance;                  // 单例实例
-
     [Header("Player info")]
-    public Player player;                                  // 玩家对象
-    public int currency;                                   // 货币数量
-    public int currentExperience;                          // 当前经验值
-    public int playerLevel;                                // 玩家等级
+    [SerializeField] private Player player;
+    [SerializeField] private int currency;
+    [SerializeField] private int currentExperience;
+    [SerializeField] private int playerLevel;
 
-    // 数据加载完成事件
-    public System.Action OnPlayerDataLoaded;              // 玩家数据加载完成事件
+    private IAudioManager audioManager;
 
-    /// <summary>
-    /// 初始化单例
-    /// </summary>
+    public Player Player { get => player; set => player = value; }
+    public int Currency { get => currency; set => currency = value; }
+    public int CurrentExperience { get => currentExperience; set => currentExperience = value; }
+    public int PlayerLevel { get => playerLevel; set => playerLevel = value; }
+
+    public event Action OnPlayerDataLoaded;
+
     private void Awake()
     {
-        if (instance != null)
-            Destroy(instance.gameObject);
-        else
-            instance = this;
+        Invoke(nameof(InitializeServices), 0.1f);
+    }
+
+    private void InitializeServices()
+    {
+        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
     }
 
     /// <summary>
@@ -49,9 +53,9 @@ public class PlayerManager : MonoBehaviour, ISaveManager
     /// <param name="data">游戏数据</param>
     public void LoadData(GameData data)
     {
-        this.currency = data.currency;
-        this.currentExperience = data.currentExperience;
-        this.playerLevel = data.playerLevel;
+        currency = data.currency;
+        currentExperience = data.currentExperience;
+        playerLevel = data.playerLevel;
 
         // 如果player还没有初始化，启动延迟初始化
         if (player == null || player.stats == null)
@@ -112,9 +116,9 @@ public class PlayerManager : MonoBehaviour, ISaveManager
     /// <param name="data">游戏数据</param>
     public void SaveData(ref GameData data)
     {
-        data.currency = this.currency;
-        data.currentExperience = this.currentExperience;
-        data.playerLevel = this.playerLevel;
+        data.currency = currency;
+        data.currentExperience = currentExperience;
+        data.playerLevel = playerLevel;
     }
 
     /// <summary>
@@ -125,7 +129,7 @@ public class PlayerManager : MonoBehaviour, ISaveManager
     {
         currentExperience += amount;
 
-        AudioManager.instance.PlaySFX(21);
+        audioManager.PlaySFX(21);
 
         // 检查升级
         while (currentExperience >= 200 * (playerLevel / 5 + 1))
@@ -133,7 +137,7 @@ public class PlayerManager : MonoBehaviour, ISaveManager
             currentExperience -= 200 * (playerLevel / 5 + 1);
             playerLevel++;
 
-            AudioManager.instance.PlaySFX(22);
+            audioManager.PlaySFX(22);
 
             // 升级时增加属性
             if (player != null && player.stats != null)
@@ -146,7 +150,7 @@ public class PlayerManager : MonoBehaviour, ISaveManager
 
                 // 升级时恢复满血
                 player.stats.currentHealth = player.stats.GetMaxHealthValue();
-                Inventory.instance.UpdateSlotUI();
+                ServiceLocator.Instance.Get<IInventory>().UpdateSlotUI();
             }
         }
     }

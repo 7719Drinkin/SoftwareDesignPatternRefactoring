@@ -22,15 +22,15 @@ public class PlayerJumpState : PlayerState
         player.continousJump = 1;
         continuousJump = false;
 
-        ItemData_Equipment equipedAmulet = Inventory.instance.GetEquipment(EquipmentType.Amulet);
+        ItemData_Equipment equipedAmulet = inventory.GetEquipment(EquipmentType.Amulet);
 
-        if (equipedAmulet != null && Inventory.instance.jumpUseAmulet)
-            if (Inventory.instance.CanUseAmulet())
+        if (equipedAmulet != null && inventory.JumpUseAmulet)
+            if (inventory.CanUseAmulet())
                 equipedAmulet.ExecuteItemEffect(player.transform);
 
         afterImageTimer = 0f;
 
-        AudioManager.instance.PlaySFX(14);
+        audioManager.PlaySFX(14);
     }
 
     public override void Exit()
@@ -55,7 +55,7 @@ public class PlayerJumpState : PlayerState
 
             continuousJump = true;
 
-            AudioManager.instance.PlaySFX(14);
+            audioManager.PlaySFX(14);
         }
 
         jumpTimer -= Time.deltaTime;

@@ -21,17 +21,17 @@ public class PlayerDashState : PlayerState
 
         player.stats.MakeInvincible(true);
 
-        if (player.skill.clone.CanUseSkill() && SkillManager.instance.dash.cloneOnDash)
+        if (player.skill.Clone.CanUseSkill() && player.skill.Dash.cloneOnDash)
         {
             canCreateClone = true;
-            player.skill.clone.CreateCloneOnDashStart();
+            player.skill.Clone.CreateCloneOnDashStart();
         }
 
-        stateTimer = player.skill.dash.dashDuration;
+        stateTimer = player.skill.Dash.dashDuration;
 
         afterImageTimer = 0f;
 
-        AudioManager.instance.PlaySFX(15);
+        audioManager.PlaySFX(15);
     }
 
     public override void Exit()
@@ -42,7 +42,7 @@ public class PlayerDashState : PlayerState
 
         if (canCreateClone)
         {
-            player.skill.clone.CreateCloneOnDashOver();
+            player.skill.Clone.CreateCloneOnDashOver();
             OnCloneOnDashUsed?.Invoke();
             canCreateClone = false;
         }
@@ -57,7 +57,7 @@ public class PlayerDashState : PlayerState
         if (!player.IsGroundDetected() && player.IsWallDetected())
             stateMachine.ChangeState(player.wallSlide);
 
-        player.SetVelocity(player.skill.dash.dashSpeed * player.skill.dash.dashDir, 0);
+        player.SetVelocity(player.skill.Dash.dashSpeed * player.skill.Dash.dashDir, 0);
 
         afterImageTimer -= Time.deltaTime;
         if (afterImageTimer <= 0f)
@@ -70,7 +70,7 @@ public class PlayerDashState : PlayerState
         if (stateTimer < 0)
             stateMachine.ChangeState(player.idleState);
 
-        if (Input.GetKeyDown(KeyCode.Mouse0) && SkillManager.instance.dashAttack.CanUseSkill() && SkillManager.instance.dash.dashAttack)
+        if (Input.GetKeyDown(KeyCode.Mouse0) && player.skill.DashAttack.CanUseSkill() && player.skill.Dash.dashAttack)
             stateMachine.ChangeState(player.dashAttack);
     }
 }
