@@ -34,7 +34,7 @@ public class Enemy_NightBorn : Enemy
     {
         base.Awake();
 
-        nightBornStates = new NightBornStatesFactory().CreateStates(this, stateMachine);
+        nightBornStates = new NightBornStateFactory().CreateStates(this, stateMachine);
 
         moveState = nightBornStates.Move;
         battleState = nightBornStates.Battle;

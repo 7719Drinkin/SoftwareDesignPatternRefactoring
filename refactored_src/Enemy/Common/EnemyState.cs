@@ -13,6 +13,7 @@ public class EnemyState
 
     // 服务依赖
     protected IAudioManager audioManager;
+    protected IPlayerManager playerManager;
 
     public EnemyState(Enemy _enemyBase, EnemyStateMachine _stateMachine, string _animBoolName)
     {
@@ -35,6 +36,8 @@ public class EnemyState
         // 延迟初始化服务
         if (audioManager == null)
             audioManager = ServiceLocator.Instance.Get<IAudioManager>();
+        if (playerManager == null)
+            playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
     }
 
     public virtual void Exit()

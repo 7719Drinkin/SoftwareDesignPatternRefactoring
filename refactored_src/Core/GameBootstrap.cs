@@ -31,6 +31,9 @@ public class GameBootstrap : MonoBehaviour
 
     private void Awake()
     {
+        // 确保场景切换时旧的服务不会残留
+        ServiceLocator.Reset();
+
         // 1. 自动查找服务（如果未在Inspector中设置）
         FindServices();
 

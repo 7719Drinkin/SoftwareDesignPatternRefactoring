@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -44,6 +45,14 @@ public class GameManager : MonoBehaviour, ISaveManager, IGameManager
     /// <param name="data">游戏数据</param>
     public void LoadData(GameData data)
     {
+        StartCoroutine(LoadDataRoutine(data));
+    }
+
+    private System.Collections.IEnumerator LoadDataRoutine(GameData data)
+    {
+        while (!TryEnsurePlayer())
+            yield return null;
+
         // 激活已保存的检查点
         foreach (KeyValuePair<string, bool> pair in data.checkpoints)
         {
@@ -108,6 +117,9 @@ public class GameManager : MonoBehaviour, ISaveManager, IGameManager
     /// <returns>最近的检查点</returns>
     private CheckPoint FindClosestCheckpoint()
     {
+        if (!TryEnsurePlayer())
+            return null;
+
         float closestDistance = Mathf.Infinity;
         CheckPoint closestCheckpoint = null;
 
@@ -123,6 +135,14 @@ public class GameManager : MonoBehaviour, ISaveManager, IGameManager
 
         }
         return closestCheckpoint;
+    }
+
+    private bool TryEnsurePlayer()
+    {
+        if (playerManager == null)
+            playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
+
+        return playerManager != null && playerManager.Player != null;
     }
 
     /// <summary>

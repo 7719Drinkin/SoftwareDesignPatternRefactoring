@@ -19,7 +19,10 @@ public class SlimeMoveState : EnemyState
 
         enemy.isKnocked = false;
 
-        player = ServiceLocator.Instance.Get<IPlayerManager>().Player.transform;
+        if (playerManager != null && playerManager.Player != null)
+            player = playerManager.Player.transform;
+        else
+            player = null;
     }
 
     public override void Update()
@@ -33,7 +36,14 @@ public class SlimeMoveState : EnemyState
             enemy.Flip();
         }
 
-        if (((enemy.IsPlayerDetected() || Vector2.Distance(enemy.transform.position, player.position) < 4) && enemy.IsGroundDetected()) && !player.GetComponent<CharacterStats>().isDead)
+        if (player == null)
+            return;
+
+        CharacterStats playerStats = player.GetComponent<CharacterStats>();
+        if (playerStats == null)
+            return;
+
+        if (((enemy.IsPlayerDetected() || Vector2.Distance(enemy.transform.position, player.position) < 4) && enemy.IsGroundDetected()) && !playerStats.isDead)
         {
             enemy.StartCoroutine("DiscoverPlayer");
 

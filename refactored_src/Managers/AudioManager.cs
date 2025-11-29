@@ -22,25 +22,40 @@ public class AudioManager : MonoBehaviour, IAudioManager
 
     public void PlaySFX(int index)
     {
-        if (index < sfx.Length)
+        if (sfx == null || index < 0 || index >= sfx.Length)
+            return;
+
+        if (sfx[index] != null)
             sfx[index].Play();
     }
 
     public void StopSFX(int index)
     {
-        if (index < sfx.Length)
+        if (sfx == null || index < 0 || index >= sfx.Length)
+            return;
+
+        if (sfx[index] != null)
             sfx[index].Stop();
     }
 
     public void StopAllSFX()
     {
+        if (sfx == null)
+            return;
+
         for (int i = 0; i < sfx.Length; i++)
-            sfx[i].Stop();
+        {
+            if (sfx[i] != null)
+                sfx[i].Stop();
+        }
     }
 
     public void PlaySFXLoop(int index)
     {
-        if (index < sfx.Length)
+        if (sfx == null || index < 0 || index >= sfx.Length)
+            return;
+
+        if (sfx[index] != null)
         {
             sfx[index].loop = true;
 
@@ -51,9 +66,12 @@ public class AudioManager : MonoBehaviour, IAudioManager
 
     public void StopAllLoopSFX()
     {
+        if (sfx == null)
+            return;
+
         for (int i = 0; i < sfx.Length; i++)
         {
-            if (sfx[i].isPlaying && sfx[i].loop)
+            if (sfx[i] != null && sfx[i].isPlaying && sfx[i].loop)
                 sfx[i].Stop();
         }
     }
@@ -64,7 +82,7 @@ public class AudioManager : MonoBehaviour, IAudioManager
 
         StopAllBGM();
 
-        if (index < bgm.Length)
+        if (bgm != null && index >= 0 && index < bgm.Length && bgm[index] != null)
         {
             bgm[index].loop = true;
             bgm[index].Play();
@@ -75,13 +93,22 @@ public class AudioManager : MonoBehaviour, IAudioManager
     {
         StopAllBGM();
 
-        bgm[bgmIndex].loop = true;
-        bgm[bgmIndex].Play();
+        if (bgm != null && bgmIndex >= 0 && bgmIndex < bgm.Length && bgm[bgmIndex] != null)
+        {
+            bgm[bgmIndex].loop = true;
+            bgm[bgmIndex].Play();
+        }
     }
 
     public void StopAllBGM()
     {
+        if (bgm == null)
+            return;
+
         for (int i = 0; i < bgm.Length; i++)
-            bgm[i].Stop();
+        {
+            if (bgm[i] != null)
+                bgm[i].Stop();
+        }
     }
 }

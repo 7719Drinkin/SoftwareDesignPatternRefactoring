@@ -46,7 +46,12 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     {
         if (playerManager == null)
             playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
+        if (playerManager == null || playerManager.Player == null)
+            return;
+
         PlayerStats playerStats = playerManager.Player.GetComponent<PlayerStats>();
+        if (playerStats == null)
+            return;
 
         if (playerStats != null)
         {

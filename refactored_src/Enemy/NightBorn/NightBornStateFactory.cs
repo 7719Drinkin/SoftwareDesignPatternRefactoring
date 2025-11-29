@@ -1,6 +1,6 @@
 using System;
 
-public class NightBornStatesFactory : IEnemyStateFactory<NightBornStates>
+public class NightBornStateFactory : IEnemyStateFactory<NightBornStates>
 {
     public NightBornStates CreateStates(Enemy enemy, EnemyStateMachine stateMachine)
     {

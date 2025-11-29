@@ -67,9 +67,7 @@ public class Sword_Skill : Skill
     {
         base.Start();
 
-        GenerateDots();
-
-        SetupGravity();
+        StartCoroutine(InitializeWhenPlayerReady());
 
         // 绑定技能解锁按钮事件
         swordUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockSword);
@@ -77,9 +75,18 @@ public class Sword_Skill : Skill
         pierceUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockPierce);
         spinUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockSpin);
         freezeEnemyUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockFreezeEnemy);
-        
+    }
+
+    private System.Collections.IEnumerator InitializeWhenPlayerReady()
+    {
+        while (!TryEnsurePlayer())
+            yield return null;
+
+        GenerateDots();
+        SetupGravity();
+
         // 延迟初始化，确保保存系统已经加载完成
-        StartCoroutine(DelayedInitialization());
+        yield return DelayedInitialization();
     }
     
     /// <summary>
@@ -137,7 +144,7 @@ public class Sword_Skill : Skill
             finalDir = new Vector2(AimDirection().normalized.x * launchForce.x, AimDirection().normalized.y * launchForce.y);
 
         // 鼠标右键按住时更新瞄准点位置
-        if (Input.GetKey(KeyCode.Mouse1))
+        if (Input.GetKey(KeyCode.Mouse1) && dots != null)
             for (int i = 0; i < numberOfDots; i++)
                 dots[i].transform.position = DotsPosition(i * spaceBetweenDots);
     }
@@ -147,6 +154,9 @@ public class Sword_Skill : Skill
     /// </summary>
     public void CreateSword()
     {
+        if (!TryEnsurePlayer())
+            return;
+
         GameObject newSword = Instantiate(swordPrefab, player.transform.position, player.transform.rotation);
         Sword_Skill_Controller newSwordScript = newSword.GetComponent<Sword_Skill_Controller>();
 
@@ -179,6 +189,9 @@ public class Sword_Skill : Skill
     /// <returns>瞄准方向向量</returns>
     public Vector2 AimDirection()
     {
+        if (!TryEnsurePlayer())
+            return Vector2.zero;
+
         Vector2 playerPosition = player.transform.position;
         Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Vector2 direction = mousePosition - playerPosition;
@@ -192,6 +205,9 @@ public class Sword_Skill : Skill
     /// <param name="_isActive">是否激活</param>
     public void DotsActive(bool _isActive)
     {
+        if (dots == null)
+            return;
+
         for (int i = 0; i < numberOfDots; i++)
             dots[i].SetActive(_isActive);
     }
@@ -201,6 +217,9 @@ public class Sword_Skill : Skill
     /// </summary>
     private void GenerateDots()
     {
+        if (!TryEnsurePlayer())
+            return;
+
         dots = new GameObject[numberOfDots];
 
         for (int i = 0; i < numberOfDots; i++)
@@ -217,6 +236,9 @@ public class Sword_Skill : Skill
     /// <returns>瞄准点位置</returns>
     private Vector2 DotsPosition(float t)
     {
+        if (!TryEnsurePlayer())
+            return Vector2.zero;
+
         Vector2 position = (Vector2)player.transform.position + new Vector2(
             AimDirection().normalized.x * launchForce.x,
             AimDirection().normalized.y * launchForce.y) * t + 0.5f * (Physics2D.gravity * swordGravity) * (t * t);

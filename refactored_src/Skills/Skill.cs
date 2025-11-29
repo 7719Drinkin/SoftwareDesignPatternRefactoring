@@ -22,7 +22,7 @@ public class Skill : MonoBehaviour
     {
         playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
         audioManager = ServiceLocator.Instance.Get<IAudioManager>();
-        player = playerManager.Player;
+        TryEnsurePlayer();
 
         cooldownTimer = -100;
     }
@@ -87,6 +87,21 @@ public class Skill : MonoBehaviour
             }
         }
 
-		return closestEnemy;
+        return closestEnemy;
+    }
+
+    protected bool TryEnsurePlayer()
+    {
+        if (player != null)
+            return true;
+
+        if (playerManager == null)
+            playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
+
+        if (playerManager == null || playerManager.Player == null)
+            return false;
+
+        player = playerManager.Player;
+        return player != null;
     }
 }

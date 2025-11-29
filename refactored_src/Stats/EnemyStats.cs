@@ -30,9 +30,24 @@ public class EnemyStats : CharacterStats
         base.Start();
 
         enemy = GetComponent<Enemy>();
-        player = playerManager.Player.GetComponent<Player>();
+        TryEnsurePlayer();
 
         currentEndurance = maxEndurance.GetValue();
+    }
+
+    private bool TryEnsurePlayer()
+    {
+        if (player != null)
+            return true;
+
+        if (playerManager == null)
+            playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
+
+        if (playerManager == null || playerManager.Player == null)
+            return false;
+
+        player = playerManager.Player.GetComponent<Player>();
+        return player != null;
     }
 
     /// <summary>
@@ -65,10 +80,17 @@ public class EnemyStats : CharacterStats
     public override void TakeDamage(int _damage, Transform _attacker, bool _canDoDamage, bool _canCrit)
     {
         // 玩家攻击判定
-        if (_attacker.GetComponent<Player>() != null)
+        bool attackerIsPlayer = _attacker.GetComponent<Player>() != null;
+        bool hasPlayerRef = TryEnsurePlayer();
+
+        if (attackerIsPlayer)
         {
-            // 玩家面向敌人或敌人被眩晕或强制伤害时，可以造成伤害
-            if (player.facingDir == enemy.facingDir || enemy.isStunned || _canDoDamage || !canBlock)
+            // 没有玩家引用时，默认允许造成伤害避免异常
+            if (!hasPlayerRef || player == null)
+            {
+                _canDoDamage = true;
+            }
+            else if (player.facingDir == enemy.facingDir || enemy.isStunned || _canDoDamage || !canBlock)
             {
                 _canDoDamage = true;
                 GetComponent<EntityFX>()?.CreatePopUpText(_damage.ToString(), _canCrit);
@@ -115,7 +137,7 @@ public class EnemyStats : CharacterStats
         enemy.DamageEffect(_attacker, _canDoDamage, _canDoDamage);
 
         // 玩家被敌人格挡：恢复相机抖动与短暂停顿
-        if (_attacker.GetComponent<Player>() != null && !_canDoDamage)
+        if (attackerIsPlayer && !_canDoDamage)
         {
             if (CombatFeedback.instance != null)
                 CombatFeedback.instance.DoHitStop(0.12f);
