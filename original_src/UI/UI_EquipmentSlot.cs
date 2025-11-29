@@ -17,10 +17,10 @@ public class UI_EquipmentSlot : UI_ItemSlot
         if (itemImage.sprite == null)
             return;
 
-        ServiceLocator.Instance.Get<IAudioManager>().PlaySFX(24);
+        AudioManager.instance.PlaySFX(24);
 
-        ServiceLocator.Instance.Get<IInventory>().UnequipItem(item.data as ItemData_Equipment);
-        ServiceLocator.Instance.Get<IInventory>().AddItem(item.data as ItemData_Equipment);
+        Inventory.instance.UnequipItem(item.data as ItemData_Equipment);
+        Inventory.instance.AddItem(item.data as ItemData_Equipment);
         ClearUpSlot();
 
         ui.itemToolTip.HideToolTip();

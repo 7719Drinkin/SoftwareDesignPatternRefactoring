@@ -41,8 +41,8 @@ public class PlayerCounterAttackState : PlayerState
                 {
                     stateTimer = 10; // any value bigger than 1
                     player.anim.SetBool("SuccessfulCounterAttack", true);
-                    player.skill.Clone.CreateCloneOnCounterAttack(hit.transform);
-                    audioManager.PlaySFX(5);
+                    player.skill.clone.CreateCloneOnCounterAttack(hit.transform);
+                    AudioManager.instance.PlaySFX(5);
 
                     // 玩家成功格挡/招架时的相机抖动
                     if (CinemachineShaker.instance != null)

@@ -13,28 +13,24 @@ public class Enemy_Skeleton : Enemy
 
     #endregion
 
-    private SkeletonStates skeletonStates;
-
     protected override void Awake()
     {
         base.Awake();
 
-        skeletonStates = new SkeletonStateFactory().CreateStates(this, stateMachine);
-
-        idleState = skeletonStates.Idle;
-        moveState = skeletonStates.Move;
-        battleState = skeletonStates.Battle;
-        attackState = skeletonStates.Attack;
-        stunnedState = skeletonStates.Stunned;
-        deadState = skeletonStates.Dead;
-        blockedState = skeletonStates.Blocked;
+        idleState = new SkeletonIdleState(this, stateMachine, "Idle", this);
+        moveState = new SkeletonMoveState(this, stateMachine, "Move", this);
+        battleState = new SkeletonBattleState(this, stateMachine, "Move", this);
+        attackState = new SkeletonAttackState(this, stateMachine, "Attack", this);
+        stunnedState = new SkeletonStunnedState(this, stateMachine, "Stunned", this);
+        deadState = new SkeletonDeadState(this, stateMachine, "Die", this);
+        blockedState = new SkeletonBlockedState(this, stateMachine, "Blocked", this);
     }
 
     protected override void Start()
     {
         base.Start();
 
-        stateMachine.Initialize(skeletonStates.InitialState);
+        stateMachine.Initialize(idleState);
 
         CloseCounterAttackWindow();
         discoverImage.SetActive(false);
@@ -55,7 +51,7 @@ public class Enemy_Skeleton : Enemy
     {
         if (base.EnemyCanBeBlocked())
         {
-            StartCoroutine(BlockKnockback(playerManager.Player.transform));
+            StartCoroutine(BlockKnockback(PlayerManager.instance.player.transform));
 
             Vector2 spawnPosition = new Vector2(transform.position.x + (0.5f * facingDir), transform.position.y + 1.2f);
             Instantiate(sparkPrefab, spawnPosition, transform.rotation);

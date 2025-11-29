@@ -11,7 +11,7 @@ public class SkeletonDeadState : EnemyState
     {
         base.Enter();
 
-        audioManager.PlaySFX(12);
+        AudioManager.instance.PlaySFX(12);
 
         enemy.FreezeTime(false);
 

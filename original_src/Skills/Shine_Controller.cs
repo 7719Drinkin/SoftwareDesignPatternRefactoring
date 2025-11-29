@@ -6,21 +6,18 @@ public class Shine_Controller : MonoBehaviour
 {
     private Animator anim;
     private Rigidbody2D rb;
-    private IAudioManager audioManager;
 
     private void Start()
     {
         anim = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
-        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.GetComponent<Enemy>() != null)
         {
-            IPlayerManager playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
-            PlayerStats playerStats = playerManager.Player.GetComponent<PlayerStats>();
+            PlayerStats playerStats = PlayerManager.instance.player.GetComponent<PlayerStats>();
             EnemyStats enemyTarget = collision.GetComponent<EnemyStats>();
             Enemy enemy = collision.GetComponent<Enemy>();
 
@@ -29,7 +26,7 @@ public class Shine_Controller : MonoBehaviour
             anim.SetTrigger("Hit");
             rb.velocity = Vector3.zero;
 
-            audioManager.PlaySFX(17);
+            AudioManager.instance.PlaySFX(17);
         }
     }
 

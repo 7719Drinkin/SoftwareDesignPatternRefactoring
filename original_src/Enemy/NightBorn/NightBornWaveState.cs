@@ -25,7 +25,7 @@ public class NightBornWaveState : EnemyState
 
         enemy.ZeroVelocity();
 
-        audioManager.PlaySFX(51);
+        AudioManager.instance.PlaySFX(51);
 
         stateTimer = Mathf.Infinity;
         waveSpawnTimer = Mathf.Infinity;
@@ -52,7 +52,7 @@ public class NightBornWaveState : EnemyState
             waveSpawnTimer = waveSpawnCoolDown;
             
             // 朝向玩家
-            Transform playerTf = ServiceLocator.Instance.Get<IPlayerManager>().Player.transform;
+            Transform playerTf = PlayerManager.instance.player.transform;
             if (playerTf.position.x > enemy.transform.position.x && enemy.facingDir == -1)
                 enemy.Flip();
             else if (playerTf.position.x < enemy.transform.position.x && enemy.facingDir == 1)
@@ -78,7 +78,7 @@ public class NightBornWaveState : EnemyState
            
             if (wavePrefab != null)
                 UnityEngine.Object.Instantiate(wavePrefab, spawnPosition, enemy.transform.rotation);
-            audioManager.PlaySFX(50);
+            AudioManager.instance.PlaySFX(50);
         }
 
         waveSpawnTimer -= Time.deltaTime;

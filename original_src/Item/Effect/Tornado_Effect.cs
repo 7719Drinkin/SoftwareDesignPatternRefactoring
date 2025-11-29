@@ -8,7 +8,7 @@ public class Tornado_Effect : ItemEffect
     public override bool ExecuteEffect(Transform playerPosition) 
     {
         Instantiate(thunderPrefab, playerPosition.position, Quaternion.identity);
-        ServiceLocator.Instance.Get<IAudioManager>().PlaySFX(39);
+        AudioManager.instance.PlaySFX(39);
         return true; // 龙卷风效果总是执行
     }
 }

@@ -23,7 +23,7 @@ public class SkeletonStunnedState : EnemyState
 
         enemy.rb.velocity = new Vector2(-enemy.facingDir * enemy.stunnedDistance.x, enemy.stunnedDistance.y);
 
-        audioManager.PlaySFX(19);
+        AudioManager.instance.PlaySFX(19);
     }
 
     public override void Exit()

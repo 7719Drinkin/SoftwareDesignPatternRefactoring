@@ -19,12 +19,12 @@ public class SlimeBattleState : EnemyState
     {
         base.Enter();
 
-        audioManager.PlaySFX(44);
+        AudioManager.instance.PlaySFX(44);
 
         enemy.isKnocked = false;
         stateTimer = enemy.battleTime;
 
-        player = ServiceLocator.Instance.Get<IPlayerManager>().Player.transform;
+        player = PlayerManager.instance.player.transform;
     }
 
     public override void Exit()

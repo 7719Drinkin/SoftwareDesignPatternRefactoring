@@ -20,25 +20,21 @@ public class Enemy_Slime : Enemy
     [SerializeField] private Enemy_Slime smallPrefab;
     [SerializeField] private Vector2 spawnOffset;
 
-    private SlimeStates slimeStates;
-
     protected override void Awake()
     {
         base.Awake();
 
-        slimeStates = new SlimeStateFactory().CreateStates(this, stateMachine);
-
-        moveState = slimeStates.Move;
-        attackState = slimeStates.Attack;
-        deadState = slimeStates.Dead;
-        battleState = slimeStates.Battle;
+        moveState = new SlimeMoveState(this, stateMachine, "Move", this);
+        attackState = new SlimeAttackState(this, stateMachine, "Attack", this);
+        deadState = new SlimeDeadState(this, stateMachine, "Die", this);
+        battleState = new SlimeBattleState(this, stateMachine, "Move", this);
     }
 
     protected override void Start()
     {
         base.Start();
 
-        stateMachine.Initialize(slimeStates.InitialState);
+        stateMachine.Initialize(moveState);
 
         CloseCounterAttackWindow();
         if (discoverImage != null)
@@ -58,7 +54,7 @@ public class Enemy_Slime : Enemy
         if (isDead) return;
         isDead = true;
 
-        audioManager.PlaySFX(46);
+        AudioManager.instance.PlaySFX(46);
 
         switch (size)
         {

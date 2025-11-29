@@ -7,7 +7,6 @@ public class Clone_Skill_Controller : MonoBehaviour
     private Animator anim;
     [SerializeField] private float colorLosingSpeed;
     private float cloneTimer;
-    private IAudioManager audioManager;
 
     [SerializeField] private Transform attackCheck;
     [SerializeField] private float attackCheckRadius;
@@ -42,8 +41,6 @@ public class Clone_Skill_Controller : MonoBehaviour
 
     public void SetupClone(Transform _newTransform, float _cloneDuration, Vector3 _offset, Transform _closestEnemy, bool _canDuplicate, int _chanceToDuplicate, Player _player, bool _increaseDamage)
     {
-        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
-        
         int comboCounter = Random.Range(1, 3);
         anim.SetInteger("AttackNumber", comboCounter);
 
@@ -69,13 +66,13 @@ public class Clone_Skill_Controller : MonoBehaviour
         switch (comboCounter)
         {
             case 0:
-                audioManager.PlaySFX(1);
+                AudioManager.instance.PlaySFX(1);
                 break;
             case 1:
-                audioManager.PlaySFX(2);
+                AudioManager.instance.PlaySFX(2);
                 break;
             case 2:
-                audioManager.PlaySFX(3);
+                AudioManager.instance.PlaySFX(3);
                 break;
         }
     }
@@ -97,11 +94,11 @@ public class Clone_Skill_Controller : MonoBehaviour
 
                 if (hit != null && canDuplicate)
                     if (Random.Range(0, 100) < chanceToDuplicate)
-                        ServiceLocator.Instance.Get<ISkillManager>().Clone.CreateClone(hit.transform, new Vector3(0.5f * DuplicateOffset, 0));
+                        SkillManager.instance.clone.CreateClone(hit.transform, new Vector3(0.5f * DuplicateOffset, 0));
 
-                if (ServiceLocator.Instance.Get<ISkillManager>().Clone.clone)
-                    if (ServiceLocator.Instance.Get<IInventory>().GetEquipment(EquipmentType.Weapon) && ServiceLocator.Instance.Get<IInventory>().CanUseWeapon())
-                        ServiceLocator.Instance.Get<IInventory>().GetEquipment(EquipmentType.Weapon).ExecuteItemEffect(hit.transform);
+                if (SkillManager.instance.clone.clone)
+                    if (Inventory.instance.GetEquipment(EquipmentType.Weapon) && Inventory.instance.CanUseWeapon())
+                        Inventory.instance.GetEquipment(EquipmentType.Weapon).ExecuteItemEffect(hit.transform);
             }
         }
     }

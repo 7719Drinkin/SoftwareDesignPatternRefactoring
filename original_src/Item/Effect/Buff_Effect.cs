@@ -29,7 +29,7 @@ public class Buff_Effect : ItemEffect
 
     public override bool ExecuteEffect(Transform position)
     {
-        stats = ServiceLocator.Instance.Get<IPlayerManager>().Player.GetComponent<PlayerStats>();
+        stats = PlayerManager.instance.player.GetComponent<PlayerStats>();
         stats.IncreaseStatBy(buffAmount, buffDuration, StatToModify());
         
         return true; // Buff效果总是执行

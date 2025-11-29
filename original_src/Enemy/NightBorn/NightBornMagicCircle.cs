@@ -3,14 +3,12 @@ using UnityEngine;
 public class NightBornMagicCircle : MonoBehaviour
 {
     private Enemy_NightBorn enemy;
-    private IAudioManager audioManager;
 
     private void Start()
     {
         enemy = FindObjectOfType<Enemy_NightBorn>();
-        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
 
-        audioManager.PlaySFX(56);
+        AudioManager.instance.PlaySFX(56);
     }
 
     public void SelfDestroy() => Destroy(gameObject);
@@ -23,8 +21,7 @@ public class NightBornMagicCircle : MonoBehaviour
         {
             if (hit.GetComponent<Player>() != null)
             {
-                var playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
-                enemy.stats.DoMagicalDamage(playerManager.Player.stats, enemy.transform);
+                enemy.stats.DoMagicalDamage(PlayerManager.instance.player.stats, enemy.transform);
             }
         }
     }

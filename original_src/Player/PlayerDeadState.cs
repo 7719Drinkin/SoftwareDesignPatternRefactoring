@@ -14,12 +14,11 @@ public class PlayerDeadState : PlayerState
         GameObject.Find("Canvas").GetComponent<UI>().DieFadeOut();
 
         // 防止快速退出游戏，没有保存数据，这里手动保存一次
-        if (saveManager != null)
-            saveManager.SaveGame();
+        SaveManager.instance.SaveGame();
         // 延迟保存，等待物品物理运动完成
         player.StartCoroutine(DelayedSave());
 
-        audioManager.PlaySFX(8);
+        AudioManager.instance.PlaySFX(8);
     }
 
     private System.Collections.IEnumerator DelayedSave()
@@ -27,8 +26,7 @@ public class PlayerDeadState : PlayerState
         // 等待物品物理运动完成
         yield return new WaitForSeconds(1f);
         
-        if (saveManager != null)
-            saveManager.SaveGame();
+        SaveManager.instance.SaveGame();
     }
 
     public override void Exit()

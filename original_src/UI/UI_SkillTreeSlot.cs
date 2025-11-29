@@ -51,7 +51,7 @@ public class UI_SkillTreeSlot : MonoBehaviour, IPointerEnterHandler, IPointerExi
         if (unlocked)
         {
             ui.CreateUI_PopUpText("技能已解锁");
-            ServiceLocator.Instance.Get<IAudioManager>().PlaySFX(29);
+            AudioManager.instance.PlaySFX(29);
             return false;
         }
 
@@ -60,7 +60,7 @@ public class UI_SkillTreeSlot : MonoBehaviour, IPointerEnterHandler, IPointerExi
             if (!shouldBeUnlocked[i].unlocked)
             {
                 ui.CreateUI_PopUpText("需要前置技能");
-                ServiceLocator.Instance.Get<IAudioManager>().PlaySFX(29);
+                AudioManager.instance.PlaySFX(29);
                 return false;
             }
         }
@@ -70,15 +70,15 @@ public class UI_SkillTreeSlot : MonoBehaviour, IPointerEnterHandler, IPointerExi
             if (shouldBeLocked[i].unlocked)
             {
                 ui.CreateUI_PopUpText("技能冲突");
-                ServiceLocator.Instance.Get<IAudioManager>().PlaySFX(29);
+                AudioManager.instance.PlaySFX(29);
                 return false;
             }
         }
 
-        if (!ServiceLocator.Instance.Get<IPlayerManager>().HaveEnoughMoney(skillPrice))
+        if (!PlayerManager.instance.HaveEnoughMoney(skillPrice))
         {
             ui.CreateUI_PopUpText("金币不足");
-            ServiceLocator.Instance.Get<IAudioManager>().PlaySFX(29);
+            AudioManager.instance.PlaySFX(29);
             return false;
         }
 
@@ -89,7 +89,7 @@ public class UI_SkillTreeSlot : MonoBehaviour, IPointerEnterHandler, IPointerExi
         ui.skillToolTip.HideSkillToolTip();
 
         ui.CreateUI_PopUpText("技能解锁成功");
-        ServiceLocator.Instance.Get<IAudioManager>().PlaySFX(26);
+        AudioManager.instance.PlaySFX(26);
 
         return true;
     }

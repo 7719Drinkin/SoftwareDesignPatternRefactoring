@@ -6,9 +6,6 @@ public class Blackhole_Skill_Controller : MonoBehaviour
     [SerializeField] private GameObject hotKeyPrefab;
     [SerializeField] private List<KeyCode> keyCodeList;
 
-    // ========== 服务依赖 ==========
-    private IPlayerManager playerManager;
-
     private float maxSize;
     private float growSpeed;
     private float shrinkSpeed;
@@ -39,16 +36,12 @@ public class Blackhole_Skill_Controller : MonoBehaviour
         cloneAttackCooldown = _cloneAttackCooldown;
         blackholeTimer = _blackholeDuration;
 
-        if (ServiceLocator.Instance.Get<ISkillManager>().Clone.crystalInsteadOfClone)
+        if (SkillManager.instance.clone.crystalInsteadOfClone)
             canPlayerDisappear = false;
     }
 
     private void Update()
     {
-        // 延迟初始化依赖
-        if (playerManager == null)
-            playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
-
 		CleanTargets();
 
         cloneAttackTimer -= Time.deltaTime;
@@ -104,7 +97,7 @@ public class Blackhole_Skill_Controller : MonoBehaviour
         if (canPlayerDisappear)
         {
             canPlayerDisappear = false;
-            playerManager.Player.MakeTransprent(true);
+            PlayerManager.instance.player.MakeTransprent(true);
         }
     }
 
@@ -121,15 +114,15 @@ public class Blackhole_Skill_Controller : MonoBehaviour
 
             float xOffset = Random.Range(0, 100) > 50 ? 2 : -2;
 
-            if (ServiceLocator.Instance.Get<ISkillManager>().Clone.crystalInsteadOfClone)
+            if (SkillManager.instance.clone.crystalInsteadOfClone)
             {
-                ServiceLocator.Instance.Get<ISkillManager>().Crystal.CreateCrystal();
-                ServiceLocator.Instance.Get<ISkillManager>().Crystal.CurrentCrystalChooseRandomTarget();
+                SkillManager.instance.crystal.CreateCrystal();
+                SkillManager.instance.crystal.CurrentCrystalChooseRandomTarget();
             }
 			else
             {
 				if (targets[randomIndex] != null)
-					ServiceLocator.Instance.Get<ISkillManager>().Clone.CreateClone(targets[randomIndex], new Vector3(xOffset, 0));
+					SkillManager.instance.clone.CreateClone(targets[randomIndex], new Vector3(xOffset, 0));
             }
 
             amountOfAttacks--;
@@ -168,7 +161,7 @@ public class Blackhole_Skill_Controller : MonoBehaviour
 
             CreateHotKey(collision);
 
-            playerManager.Player.stats.DoMagicalDamage(collision.GetComponent<CharacterStats>(), transform);
+            PlayerManager.instance.player.stats.DoMagicalDamage(collision.GetComponent<CharacterStats>(), transform);
         }
     }
 
@@ -183,7 +176,7 @@ public class Blackhole_Skill_Controller : MonoBehaviour
         collision.GetComponent<Enemy>()?.FreezeTime(false);
 
         if (collision.GetComponent<Enemy>() != null)
-            playerManager.Player.stats.DoMagicalDamage(collision.GetComponent<CharacterStats>(), transform);
+            PlayerManager.instance.player.stats.DoMagicalDamage(collision.GetComponent<CharacterStats>(), transform);
     }
 
     private void CreateHotKey(Collider2D collision)

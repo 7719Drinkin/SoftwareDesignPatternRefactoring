@@ -7,8 +7,7 @@ public class Tornado_Controller : MonoBehaviour
     {
         if (collision.GetComponent<Enemy>() != null)
         {
-            IPlayerManager playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
-            PlayerStats playerStats = playerManager.Player.GetComponent<PlayerStats>();
+            PlayerStats playerStats = PlayerManager.instance.player.GetComponent<PlayerStats>();
             EnemyStats enemyTarget = collision.GetComponent<EnemyStats>();
             Enemy enemy = collision.GetComponent<Enemy>();
 
@@ -22,7 +21,7 @@ public class Tornado_Controller : MonoBehaviour
     private IEnumerator EnemyKnocked(Enemy enemy, Rigidbody2D rb, float delay)
     {
         enemy.isKnocked = true;
-        rb.velocity = new Vector2(5 * ServiceLocator.Instance.Get<ISkillManager>().Dash.dashDir, 75);
+        rb.velocity = new Vector2(5 * SkillManager.instance.dash.dashDir, 75);
 
         yield return new WaitForSeconds(delay);
 

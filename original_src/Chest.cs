@@ -7,7 +7,6 @@ public class Chest : MonoBehaviour
     private Animator anim;
     public string chestId;
     public bool opened;
-    private IAudioManager audioManager;
 
     [SerializeField] private int amountOfCurrency;
     [SerializeField] private ItemDrop itemDrop;
@@ -17,7 +16,6 @@ public class Chest : MonoBehaviour
     private void Awake()
     {
         anim = GetComponent<Animator>();
-        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
     }
 
     [ContextMenu("Generate new id")]
@@ -31,14 +29,14 @@ public class Chest : MonoBehaviour
         if (opened) return;
         SetChestOpen();
 
-        audioManager.PlaySFX(45);
+        AudioManager.instance.PlaySFX(45);
 
         itemDrop.GenerateDrop();
 
         experienceDrop.SetExperienceAmount(amountOfExperience);
         experienceDrop.GenerateExperienceDrop();
 
-        ServiceLocator.Instance.Get<IPlayerManager>().Currency += amountOfCurrency;
+        PlayerManager.instance.currency += amountOfCurrency;
     }
 
     public void SetChestOpen()

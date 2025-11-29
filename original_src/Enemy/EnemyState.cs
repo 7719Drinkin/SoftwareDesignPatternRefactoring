@@ -11,9 +11,6 @@ public class EnemyState
 
     protected float stateTimer;
 
-    // 服务依赖
-    protected IAudioManager audioManager;
-
     public EnemyState(Enemy _enemyBase, EnemyStateMachine _stateMachine, string _animBoolName)
     {
         this.stateMachine = _stateMachine;
@@ -31,10 +28,6 @@ public class EnemyState
         triggerCalled = false;
         rb = enemyBase.rb;
         enemyBase.anim.SetBool(animBoolName, true);
-
-        // 延迟初始化服务
-        if (audioManager == null)
-            audioManager = ServiceLocator.Instance.Get<IAudioManager>();
     }
 
     public virtual void Exit()

@@ -29,7 +29,7 @@ public class UI_CraftSlot : UI_ItemSlot
         if (itemImage.sprite == null)
             return;
 
-        ServiceLocator.Instance.Get<IAudioManager>().PlaySFX(24);
+        AudioManager.instance.PlaySFX(24);
 
         ui.craftWindow.SetupCraftWindow(item.data as ItemData_Equipment);
     }

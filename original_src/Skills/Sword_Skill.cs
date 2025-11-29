@@ -165,7 +165,7 @@ public class Sword_Skill : Skill
         }
 
         // 设置剑的基本属性
-        newSwordScript.SetupSword(finalDir, swordGravity, player, canFreezeEnemy, freezeTimeDuration, ServiceLocator.Instance.Get<IInventory>().SwordUseAmulet);
+        newSwordScript.SetupSword(finalDir, swordGravity, player, canFreezeEnemy, freezeTimeDuration, Inventory.instance.swordUseAmulet);
 
         player.AssignNewSword(newSword);
 

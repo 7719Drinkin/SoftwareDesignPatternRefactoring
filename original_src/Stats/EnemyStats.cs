@@ -30,7 +30,7 @@ public class EnemyStats : CharacterStats
         base.Start();
 
         enemy = GetComponent<Enemy>();
-        player = playerManager.Player.GetComponent<Player>();
+        player = PlayerManager.instance.player.GetComponent<Player>();
 
         currentEndurance = maxEndurance.GetValue();
     }
@@ -72,12 +72,12 @@ public class EnemyStats : CharacterStats
             {
                 _canDoDamage = true;
                 GetComponent<EntityFX>()?.CreatePopUpText(_damage.ToString(), _canCrit);
-                audioManager.PlaySFX(4); // 成功攻击音效
+                AudioManager.instance.PlaySFX(4); // 成功攻击音效
             }
             else
             {
                 GetComponent<EntityFX>()?.CreatePopUpText("格挡");
-                audioManager.PlaySFX(6); // 格挡音效
+                AudioManager.instance.PlaySFX(6); // 格挡音效
             }
         }
         else
@@ -92,12 +92,12 @@ public class EnemyStats : CharacterStats
 
                 // 分身或剑技能攻击音效
                 if (_attacker.GetComponent<Clone_Skill_Controller>() != null || _attacker.GetComponent<Sword_Skill_Controller>() != null)
-                    audioManager.PlaySFX(4);
+                    AudioManager.instance.PlaySFX(4);
             }
             else
             {
                 GetComponent<EntityFX>()?.CreatePopUpText("格挡");
-                audioManager.PlaySFX(6); // 格挡音效
+                AudioManager.instance.PlaySFX(6); // 格挡音效
             }
         }
 

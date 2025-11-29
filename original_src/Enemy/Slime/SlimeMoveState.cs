@@ -19,7 +19,7 @@ public class SlimeMoveState : EnemyState
 
         enemy.isKnocked = false;
 
-        player = ServiceLocator.Instance.Get<IPlayerManager>().Player.transform;
+        player = PlayerManager.instance.player.transform;
     }
 
     public override void Update()

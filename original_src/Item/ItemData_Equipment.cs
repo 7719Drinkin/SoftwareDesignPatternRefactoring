@@ -61,7 +61,7 @@ public class ItemData_Equipment : ItemData
             switch (equipmentType)
             {
                 case EquipmentType.Weapon:
-                    ServiceLocator.Instance.Get<IInventory>().ConsumeWeaponCooldown();
+                    Inventory.instance.ConsumeWeaponCooldown();
                     break;
                 case EquipmentType.Armor:
                     // 护甲冷却在CanUseArmor中已经处理
@@ -78,7 +78,7 @@ public class ItemData_Equipment : ItemData
 
     public void AddModifiers()
     {
-        PlayerStats playerStats = ServiceLocator.Instance.Get<IPlayerManager>().Player.GetComponent<PlayerStats>();
+        PlayerStats playerStats = PlayerManager.instance.player.GetComponent<PlayerStats>();
 
         playerStats.strength.AddModifier(strength);
         playerStats.agility.AddModifier(agility);
@@ -101,7 +101,7 @@ public class ItemData_Equipment : ItemData
 
     public void RemoveModifiers()
     {
-        PlayerStats playerStats = ServiceLocator.Instance.Get<IPlayerManager>().Player.GetComponent<PlayerStats>();
+        PlayerStats playerStats = PlayerManager.instance.player.GetComponent<PlayerStats>();
 
         playerStats.strength.RemoveModifier(strength);
         playerStats.agility.RemoveModifier(agility);

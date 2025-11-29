@@ -24,7 +24,7 @@ public class NightBornGatherState : EnemyState
 
         enemy.gatherSkill.SetActive(true);
 
-        audioManager.PlaySFX(54);
+        AudioManager.instance.PlaySFX(54);
     }
 
     public override void Update()

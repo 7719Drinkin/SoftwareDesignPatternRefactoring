@@ -21,7 +21,7 @@ public class PlayerStats : CharacterStats
 
         player.fx.CreatePopUpText(_damage.ToString(), _canCrit);
 
-        audioManager.PlaySFX(7);
+        AudioManager.instance.PlaySFX(7);
     }
 
     protected override void Die()
@@ -29,8 +29,8 @@ public class PlayerStats : CharacterStats
         base.Die();
 
         // 玩家死亡时扣除一半的金钱和经验值
-        playerManager.Currency = Mathf.Max(0, playerManager.Currency / 2);
-        playerManager.CurrentExperience = Mathf.Max(0, playerManager.CurrentExperience / 2);
+        PlayerManager.instance.currency = Mathf.Max(0, PlayerManager.instance.currency / 2);
+        PlayerManager.instance.currentExperience = Mathf.Max(0, PlayerManager.instance.currentExperience / 2);
 
         player.Die();
     }
@@ -39,9 +39,9 @@ public class PlayerStats : CharacterStats
     {
         base.DecreaseHealthBy(damage);
 
-        ItemData_Equipment currentArmor = ServiceLocator.Instance.Get<IInventory>().GetEquipment(EquipmentType.Armor);
+        ItemData_Equipment currentArmor = Inventory.instance.GetEquipment(EquipmentType.Armor);
 
-        if (!ServiceLocator.Instance.Get<IInventory>().CanUseArmor())
+        if (!Inventory.instance.CanUseArmor())
             return;
 
         if (currentArmor != null)

@@ -1,17 +1,21 @@
 using UnityEngine;
 
-public class AudioManager : MonoBehaviour, IAudioManager
+public class AudioManager : MonoBehaviour
 {
+    static public AudioManager instance;
+
     [SerializeField] private AudioSource[] sfx;
     [SerializeField] private AudioSource[] bgm;
 
-    [SerializeField] private bool playBgm;
+    public bool playBgm;
     private int bgmIndex;
 
-    public bool PlayBgm 
-    { 
-        get => playBgm; 
-        set => playBgm = value; 
+    private void Awake()
+    {
+        if (instance != null)
+            Destroy(instance.gameObject);
+        else
+            instance = this;
     }
 
     private void Update()

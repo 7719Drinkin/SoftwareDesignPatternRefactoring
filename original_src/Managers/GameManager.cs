@@ -7,23 +7,25 @@ using UnityEngine.SceneManagement;
 /// 负责检查点系统、场景重启、游戏暂停和存档管理
 /// 实现ISaveManager接口，支持检查点数据的保存和加载
 /// </summary>
-public class GameManager : MonoBehaviour, ISaveManager, IGameManager
+public class GameManager : MonoBehaviour, ISaveManager
 {
-    [SerializeField] private CheckPoint[] checkPoints;
-    [SerializeField] private Chest[] chests;
+    public static GameManager instance;                   // 单例实例
 
-    private IPlayerManager playerManager;
-    private IAudioManager audioManager;
-    private ISaveManagerService saveManager;
+    [SerializeField] private CheckPoint[] checkPoints;     // 检查点数组
+    [SerializeField] private Chest[] chests;               // 宝箱数组
 
+    /// <summary>
+    /// 初始化游戏管理器
+    /// </summary>
     private void Awake()
     {
+        if (instance != null)
+            Destroy(instance.gameObject);
+        else
+            instance = this;
+
         checkPoints = FindObjectsOfType<CheckPoint>();
         chests = FindObjectsOfType<Chest>();
-
-        playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
-        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
-        saveManager = ServiceLocator.Instance.Get<ISaveManagerService>();
     }
 
     /// <summary>
@@ -31,8 +33,7 @@ public class GameManager : MonoBehaviour, ISaveManager, IGameManager
     /// </summary>
     public void ReStartScene()
     {
-        if (saveManager != null)
-            saveManager.LoadGame();
+        SaveManager.instance.LoadGame();
 
         Scene scene = SceneManager.GetActiveScene();
         SceneManager.LoadScene(scene.name);
@@ -58,7 +59,7 @@ public class GameManager : MonoBehaviour, ISaveManager, IGameManager
         foreach (CheckPoint checkPoint in checkPoints)
         {
             if (checkPoint.checkpointId == data.closestCheckpointId)
-                playerManager.Player.transform.position = checkPoint.transform.position;
+                PlayerManager.instance.player.transform.position = checkPoint.transform.position;
         }
 
         // 加载所有宝箱状态
@@ -113,7 +114,7 @@ public class GameManager : MonoBehaviour, ISaveManager, IGameManager
 
         foreach (var checkpoint in checkPoints)
         {
-            float distanceToCheckpoint = Vector2.Distance(playerManager.Player.transform.position, checkpoint.transform.position);
+            float distanceToCheckpoint = Vector2.Distance(PlayerManager.instance.player.transform.position, checkpoint.transform.position);
 
             if (distanceToCheckpoint < closestDistance && checkpoint.activated == true)
             {
@@ -134,7 +135,7 @@ public class GameManager : MonoBehaviour, ISaveManager, IGameManager
         if (pause)
         {
             Time.timeScale = 0;
-            audioManager.StopAllLoopSFX();
+            AudioManager.instance.StopAllLoopSFX();
         }
         else
         {

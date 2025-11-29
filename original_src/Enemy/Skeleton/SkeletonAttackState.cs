@@ -19,7 +19,7 @@ public class SkeletonAttackState : EnemyState
 
         enemy.anim.speed *= (1 + attackSpeed);
 
-        audioManager.PlaySFX(11);
+        AudioManager.instance.PlaySFX(11);
     }
 
     public override void Exit()

@@ -17,7 +17,7 @@ public class SkeletonBattleState : EnemyState
 
         enemy.isKnocked = false;
 
-        player = ServiceLocator.Instance.Get<IPlayerManager>().Player.transform;
+        player = PlayerManager.instance.player.transform;
         stateTimer = enemy.battleTime;
     }
 

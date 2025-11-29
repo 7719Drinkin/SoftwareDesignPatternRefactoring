@@ -6,8 +6,7 @@ public class Thunder_Controller : MonoBehaviour
     {
         if (collision.GetComponent<Enemy>() != null)
         {
-            IPlayerManager playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
-            PlayerStats playerStats = playerManager.Player.GetComponent<PlayerStats>();
+            PlayerStats playerStats = PlayerManager.instance.player.GetComponent<PlayerStats>();
             EnemyStats enemyTarget = collision.GetComponent<EnemyStats>();
 
             playerStats.DoMagicalDamage(enemyTarget, transform, ElementType.Lightning);

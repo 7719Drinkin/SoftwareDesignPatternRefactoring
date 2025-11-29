@@ -54,7 +54,7 @@ public class Clone_Skill : Skill
     {
         if (crystalInsteadOfClone)
         {
-            ServiceLocator.Instance.Get<ISkillManager>().Crystal.CreateCrystal();
+            SkillManager.instance.crystal.CreateCrystal();
             return;
         }
 
@@ -68,19 +68,19 @@ public class Clone_Skill : Skill
 
     public void CreateCloneOnDashStart()
     {
-        if (ServiceLocator.Instance.Get<ISkillManager>().Dash.cloneOnDash)
+        if (SkillManager.instance.dash.cloneOnDash)
             CreateClone(player.transform, Vector3.zero);
     }
 
     public void CreateCloneOnDashOver()
     {
-        if (ServiceLocator.Instance.Get<ISkillManager>().Dash.cloneOnDash)
+        if (SkillManager.instance.dash.cloneOnDash)
             CreateClone(player.transform, Vector3.zero);
     }
 
     public void CreateCloneOnCounterAttack(Transform _enemyTransform)
     {
-        if (ServiceLocator.Instance.Get<ISkillManager>().Parry.fightBack)
+        if (SkillManager.instance.parry.fightBack)
             StartCoroutine(CreateCloneWithDelay(_enemyTransform, new Vector3(1.2f * player.facingDir, 0)));
     }
 

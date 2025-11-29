@@ -4,16 +4,6 @@ public class PlayerAnimationTriggers : MonoBehaviour
 {
     private Player player => GetComponentInParent<Player>();
 
-    // 服务依赖
-    private IAudioManager audioManager;
-    private IInventory inventory;
-
-    private void Awake()
-    {
-        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
-        inventory = ServiceLocator.Instance.Get<IInventory>();
-    }
-
     private void AnimationTrigger()
     {
         player.AnimationTrigger();
@@ -37,8 +27,8 @@ public class PlayerAnimationTriggers : MonoBehaviour
                         target.ThunderStike();
                 }
 
-                if (inventory.GetEquipment(EquipmentType.Weapon) && inventory.CanUseWeapon())
-                    inventory.GetEquipment(EquipmentType.Weapon).ExecuteItemEffect(hit.transform);
+                if (Inventory.instance.GetEquipment(EquipmentType.Weapon) && Inventory.instance.CanUseWeapon())
+                    Inventory.instance.GetEquipment(EquipmentType.Weapon).ExecuteItemEffect(hit.transform);
             }
 
             if (hit.GetComponent<Chest>() != null&& !hit.GetComponent<Chest>().opened)
@@ -66,8 +56,8 @@ public class PlayerAnimationTriggers : MonoBehaviour
 
     private void ThrowSword()
     {
-        audioManager.PlaySFX(33);
+        AudioManager.instance.PlaySFX(33);
 
-        ServiceLocator.Instance.Get<ISkillManager>().Sword.CreateSword();
+        SkillManager.instance.sword.CreateSword();
     }
 }

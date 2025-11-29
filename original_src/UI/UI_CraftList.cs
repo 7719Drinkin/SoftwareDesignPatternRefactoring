@@ -45,7 +45,7 @@ public class UI_CraftList : MonoBehaviour, IPointerDownHandler
         if (ui != null && ui.craftWindow != null)
             ui.craftWindow.SetupCraftWindow(craftEquipment[0]);
 
-        ServiceLocator.Instance.Get<IAudioManager>().PlaySFX(24);
+        AudioManager.instance.PlaySFX(24);
     }
 
     public void SetupDefaultCraftWindow()

@@ -7,9 +7,6 @@ public class ExperienceObject : MonoBehaviour
     [SerializeField] private int experienceAmount;
     [SerializeField] private Vector2 velocity;
 
-    // ========== 服务依赖 ==========
-    private IPlayerManager playerManager;
-
     [Header("Color Flash Settings")]
     [SerializeField] private SpriteRenderer sr;
     [SerializeField] private Color[] flashColors;
@@ -30,9 +27,6 @@ public class ExperienceObject : MonoBehaviour
 
         // 开始闪烁效果
         StartColorFlash();
-
-        // 通过ServiceLocator获取依赖
-        playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
     }
 
     public void SetupObject(int _experienceAmount, Vector2 _velocity)
@@ -77,7 +71,7 @@ public class ExperienceObject : MonoBehaviour
 
         rb.velocity = new Vector2(0, 12);
 
-        playerManager.AddExperience(experienceAmount);
+        PlayerManager.instance.AddExperience(experienceAmount);
 
         StartCoroutine(DestroyMe());
     }

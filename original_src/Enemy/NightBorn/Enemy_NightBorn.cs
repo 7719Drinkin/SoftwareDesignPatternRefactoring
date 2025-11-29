@@ -14,13 +14,14 @@ public class Enemy_NightBorn : Enemy
 
     #endregion
 
-    private NightBornStates nightBornStates;
-
     public float assassinateCooldown;
-    [Header("Shared Skill Cooldown")]
-    public float sharedSkillCooldown = 10f;  // gather、wave、魔法阵共享冷却时间
+    public float gatherCooldown;
+    public float magicCircleCooldown;
+    public float waveCooldown;
 
-    private float sharedSkillTimer;
+    private float gatherTimer;
+    private float magicCircleTimer;
+    private float waveTimer;
 
     public GameObject gatherSkill;
     [SerializeField] private GameObject magicCirclePrefab;
@@ -28,31 +29,31 @@ public class Enemy_NightBorn : Enemy
     public GameObject iceWavePrefab;
     public GameObject lightningWavePrefab;
 
-    public bool canAssassinate { get; private set; } = false;
+    private bool canAssassinate = false;
 
     protected override void Awake()
     {
         base.Awake();
 
-        nightBornStates = new NightBornStatesFactory().CreateStates(this, stateMachine);
-
-        moveState = nightBornStates.Move;
-        battleState = nightBornStates.Battle;
-        attackState = nightBornStates.Attack;
-        blockedState = nightBornStates.Blocked;
-        stunnedState = nightBornStates.Stunned;
-        deadState = nightBornStates.Dead;
-        gatherState = nightBornStates.Gather;
-        waveState = nightBornStates.Wave;
+        moveState = new NightBornMoveState(this, stateMachine, "Move", this);
+        battleState = new NightBornBattleState(this, stateMachine, "Move", this);
+        attackState = new NightBornAttackState(this, stateMachine, "Attack", this);
+        blockedState = new NightBornBlockedState(this, stateMachine, "Blocked", this);
+        stunnedState = new NightBornStunnedState(this, stateMachine, "Stunned", this);
+        deadState = new NightBornDeadState(this, stateMachine, "Dead", this);
+        gatherState = new NightBornGatherState(this, stateMachine, "Gather", this);
+        waveState = new NightBornWaveState(this, stateMachine, "Wave", this);
     }
 
     protected override void Start()
     {
         base.Start();
 
-        stateMachine.Initialize(nightBornStates.InitialState);
+        stateMachine.Initialize(moveState);
 
-        sharedSkillTimer = sharedSkillCooldown;
+        gatherTimer = gatherCooldown;
+        magicCircleTimer = magicCircleCooldown;
+        waveTimer = waveCooldown;
 
         gatherSkill.SetActive(false);
         CloseCounterAttackWindow();
@@ -70,47 +71,31 @@ public class Enemy_NightBorn : Enemy
                 stateMachine.ChangeState(stunnedState);
         }
 
-        // 共享冷却时间：冷却结束时随机触发 gather、wave 或魔法阵
-        if (sharedSkillTimer < 0 && stateMachine.currentState == battleState && !canAssassinate)
+        if (gatherTimer < 0 && stateMachine.currentState == battleState && !canAssassinate)
         {
-            Transform playerTf = playerManager != null ? playerManager.Player.transform : null;
-            if (playerTf != null)
-            {
-                float distanceToPlayer = Vector2.Distance(transform.position, playerTf.position);
-                
-                // 构建可用的技能列表
-                System.Collections.Generic.List<int> availableSkills = new System.Collections.Generic.List<int>();
-                
-               
-                availableSkills.Add(0);
-                availableSkills.Add(1);
-                availableSkills.Add(2);
-                
-                // 随机选择一个可用技能
-                if (availableSkills.Count > 0)
-                {
-                    int selectedSkill = availableSkills[Random.Range(0, availableSkills.Count)];
-                    
-                    switch (selectedSkill)
-                    {
-                        case 0: // Gather
-                            stateMachine.ChangeState(gatherState);
-                            break;
-                        case 1: // Wave
-                            stateMachine.ChangeState(waveState);
-                            break;
-                        case 2: // Magic Circle
-                            Vector2 circlePos = new Vector2(playerTf.position.x, playerTf.position.y - 1.2f);
-                            Instantiate(magicCirclePrefab, circlePos, transform.rotation);
-                            break;
-                    }
-                    
-                    sharedSkillTimer = sharedSkillCooldown;
-                }
-            }
+            stateMachine.ChangeState(gatherState);
+            gatherTimer = gatherCooldown;
         }
 
-        sharedSkillTimer -= Time.deltaTime;
+        if (magicCircleTimer < 0 && stateMachine.currentState == battleState)
+        {
+            Transform playerTf = PlayerManager.instance != null ? PlayerManager.instance.player.transform : null;
+            Vector2 circlePos = new Vector2(playerTf.position.x, playerTf.position.y - 1.2f);
+            Instantiate(magicCirclePrefab, circlePos, transform.rotation);
+            magicCircleTimer = magicCircleCooldown;
+        }
+
+        if (waveTimer < 0 && stateMachine.currentState == battleState && !canAssassinate
+            && Vector2.Distance(transform.position, PlayerManager.instance.player.transform.position) < 20 
+            && Vector2.Distance(transform.position, PlayerManager.instance.player.transform.position) > 10)
+        {
+            stateMachine.ChangeState(waveState);
+            waveTimer = waveCooldown;
+        }
+
+        gatherTimer -= Time.deltaTime;
+        magicCircleTimer -= Time.deltaTime;
+        waveTimer -= Time.deltaTime;
 
         if (isDead && stateMachine.currentState != deadState)
             SelfDestroy();
@@ -123,14 +108,10 @@ public class Enemy_NightBorn : Enemy
     /// <returns>是否成功传送</returns>
     public bool TryAssassinateBehindPlayer(float offsetX)
     {
-        // 敌人被冻结时不能传送
-        if (isStunned)
+        if (PlayerManager.instance == null || PlayerManager.instance.player == null)
             return false;
 
-        if (playerManager == null || playerManager.Player == null)
-            return false;
-
-        Transform playerTf = playerManager.Player.transform;
+        Transform playerTf = PlayerManager.instance.player.transform;
         Player playerComp = playerTf.GetComponent<Player>();
         if (playerComp == null)
             return false;
@@ -145,13 +126,13 @@ public class Enemy_NightBorn : Enemy
         if (!hasGround)
             return false;
 
-        StartCoroutine(AssassinateAfterDelay(targetX, targetY, 0.25f));
+        StartCoroutine(AssassinateAfterDelay(targetX, targetY, 1f));
         return true;
     }
 
     private System.Collections.IEnumerator AssassinateAfterDelay(float targetX, float targetY, float delaySeconds)
     {
-        audioManager.PlaySFX(49);
+        AudioManager.instance.PlaySFX(49);
         canAssassinate = true;
         yield return new WaitForSeconds(delaySeconds);
         transform.position = new Vector2(targetX, targetY);
@@ -163,7 +144,7 @@ public class Enemy_NightBorn : Enemy
     {
         if (base.EnemyCanBeBlocked())
         {
-            StartCoroutine(BlockKnockback(playerManager.Player.transform));
+            StartCoroutine(BlockKnockback(PlayerManager.instance.player.transform));
 
             Vector2 spawnPosition = new Vector2(transform.position.x + (0.5f * facingDir), transform.position.y + 1.2f);
             Instantiate(sparkPrefab, spawnPosition, transform.rotation);
@@ -186,7 +167,7 @@ public class Enemy_NightBorn : Enemy
 
         if (stateMachine != null && stateMachine.currentState == gatherState && canFlash)
         {
-            sharedSkillTimer = sharedSkillCooldown;  // 重置共享冷却时间
+            gatherTimer = gatherCooldown;
             stateMachine.ChangeState(battleState);
         }
     }

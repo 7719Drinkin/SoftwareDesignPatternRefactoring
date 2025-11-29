@@ -53,14 +53,14 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
 
         if (Input.GetKey(KeyCode.LeftControl))
         {
-            ServiceLocator.Instance.Get<IInventory>().RemoveItem(item.data);
+            Inventory.instance.RemoveItem(item.data);
             return;
         }
 
-        ServiceLocator.Instance.Get<IAudioManager>().PlaySFX(24);
+        AudioManager.instance.PlaySFX(24);
 
         if (item.data.itemType == ItemType.Equipment)
-            ServiceLocator.Instance.Get<IInventory>().EquipItem(item.data);
+            Inventory.instance.EquipItem(item.data);
 
         ui.itemToolTip.HideToolTip();
     }

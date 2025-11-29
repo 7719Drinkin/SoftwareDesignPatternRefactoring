@@ -8,7 +8,7 @@ public class Fire_Effect : ItemEffect
 
     public override bool ExecuteEffect(Transform respondPosition)
     {
-        Player player = ServiceLocator.Instance.Get<IPlayerManager>().Player;
+        Player player = PlayerManager.instance.player;
 
         bool thirdAttack = player.primaryAttack.comboCounter == 2;
 

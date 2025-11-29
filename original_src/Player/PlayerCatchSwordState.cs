@@ -22,7 +22,7 @@ public class PlayerCatchSwordState : PlayerState
 
         rb.velocity = new Vector2(player.swordReturnImpact * -player.facingDir, rb.velocity.y);
 
-        audioManager.PlaySFX(34);
+        AudioManager.instance.PlaySFX(34);
     }
 
     public override void Exit()

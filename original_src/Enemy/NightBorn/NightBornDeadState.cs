@@ -18,8 +18,8 @@ public class NightBornDeadState : EnemyState
         enemy.GetComponentInChildren<UI_HealthBar>().DestroyMe();
         enemy.GetComponentInChildren<UI_EnduranceBar>().DestroyMe();
 
-        audioManager.PlaySFX(52);
-        audioManager.PlayBGM(1);
+        AudioManager.instance.PlaySFX(52);
+        AudioManager.instance.PlayBGM(1);
     }
 
     public override void Update()

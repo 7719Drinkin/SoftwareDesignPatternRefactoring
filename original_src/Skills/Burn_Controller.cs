@@ -3,24 +3,16 @@ using UnityEngine;
 
 public class Burn_Controller : MonoBehaviour
 {
-    private IAudioManager audioManager;
-
-    private void Start()
-    {
-        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
-    }
-
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.GetComponent<Enemy>() != null)
         {
-            IPlayerManager playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
-            PlayerStats playerStats = playerManager.Player.GetComponent<PlayerStats>();
+            PlayerStats playerStats = PlayerManager.instance.player.GetComponent<PlayerStats>();
             EnemyStats enemyTarget = collision.GetComponent<EnemyStats>();
             Enemy enemy = collision.GetComponent<Enemy>();
 
             StartCoroutine(ExplodeDamage(playerStats, enemyTarget));
-            audioManager.PlaySFX(16);
+            AudioManager.instance.PlaySFX(16);
         }
     }
 
