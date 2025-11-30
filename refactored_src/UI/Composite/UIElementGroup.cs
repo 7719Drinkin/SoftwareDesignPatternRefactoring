@@ -64,5 +64,20 @@ public class UIElementGroup : IUIComponent
         }
         return false;
     }
+
+    /// <summary>
+    /// 获取指定索引的组件（用于按顺序操作）
+    /// </summary>
+    public IUIComponent GetComponent(int index)
+    {
+        if (index >= 0 && index < components.Count)
+            return components[index];
+        return null;
+    }
+
+    /// <summary>
+    /// 获取组件数量
+    /// </summary>
+    public int Count => components.Count;
 }
 

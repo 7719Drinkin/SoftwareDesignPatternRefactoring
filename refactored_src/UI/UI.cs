@@ -26,14 +26,12 @@ public class UI : MonoBehaviour
     public UI_CraftToolTip craftToolTip;
     public UI_CraftWindow craftWindow;
 
-    private UI_FadeOut startFadeIn;
-    private bool isFadeIn;
-
     // ========== Composite Pattern ==========
     private UIElementGroup tooltipGroup;        // Tooltip 组合组
     private UIElementGroup deathUIGroup;        // 死亡界面 UI 元素组
     private IUIComponent endTextComponent;       // 死亡文本组件引用
     private IUIComponent restartButtonComponent; // 重启按钮组件引用
+    private IUIComponent fadeComponent;         // 淡入淡出组件引用
     // =======================================
 
     void Start()
@@ -42,7 +40,6 @@ public class UI : MonoBehaviour
         statToolTip = UI_StatToolTip.instance;
         skillToolTip = UI_SkillToolTip.instance;
         craftToolTip = UI_CraftToolTip.instance;
-        startFadeIn = fadeIn.GetComponent<UI_FadeOut>();
 
         // ========== 初始化组合模式 ==========
         InitializeCompositeGroups();
@@ -83,6 +80,12 @@ public class UI : MonoBehaviour
         {
             restartButtonComponent = new UIElementComponent(restartGameButton);
             deathUIGroup.Add(restartButtonComponent);
+        }
+
+        // 创建淡入淡出组件
+        if (fadeIn != null)
+        {
+            fadeComponent = new FadeComponent(fadeIn);
         }
     }
 
@@ -125,26 +128,18 @@ public class UI : MonoBehaviour
         if (_menu != null)
             _menu.SetActive(true);
 
-        // 最后触发一次淡入（并确保它是激活的）
-        if (startFadeIn != null && !isFadeIn)
-        {
-            if (!fadeIn.activeSelf)
-                fadeIn.SetActive(true);
-
-            startFadeIn.FadeIn();
-            isFadeIn = true;
-        }
+        // ========== 使用组合模式触发淡入 ==========
+        fadeComponent?.Show();
+        // =======================================
     }
 
     public void DieFadeOut()
     {
-        if (startFadeIn != null)
-        {
-            startFadeIn.FadeOut();
-            isFadeIn = false;
+        // ========== 使用组合模式触发淡出 ==========
+        fadeComponent?.Hide();
 
-            StartCoroutine(ShowDieText());
-        }
+        StartCoroutine(ShowDieText());
+        // =======================================
     }
 
     private IEnumerator ShowDieText()
@@ -152,13 +147,18 @@ public class UI : MonoBehaviour
         yield return new WaitForSeconds(2);
 
         // ========== 使用组合模式按顺序显示死亡界面 UI ==========
-        // 先显示 endText（使用 deathUIGroup 中的组件）
-        endTextComponent?.Show();
+        // 通过组合对象按索引访问组件（更符合组合模式）
+        if (deathUIGroup != null && deathUIGroup.Count > 0)
+        {
+            // 显示第一个组件（endText）
+            deathUIGroup.GetComponent(0)?.Show();
 
-        yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(1);
 
-        // 再显示 restartGameButton（使用 deathUIGroup 中的组件）
-        restartButtonComponent?.Show();
+            // 显示第二个组件（restartGameButton）
+            if (deathUIGroup.Count > 1)
+                deathUIGroup.GetComponent(1)?.Show();
+        }
         // =====================================================
     }
 
