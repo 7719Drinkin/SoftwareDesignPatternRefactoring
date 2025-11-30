@@ -1,5 +1,9 @@
 using UnityEngine;
 
+/// <summary>
+/// 治疗效果 - 具体实现者（Bridge Pattern - ConcreteImplementor）
+/// 实现装备的治疗效果
+/// </summary>
 [CreateAssetMenu(fileName = "Heal effect", menuName = "Data/Item effect/Heal")]
 public class Heal_Effect : ItemEffect
 {

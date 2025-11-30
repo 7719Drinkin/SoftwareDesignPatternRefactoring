@@ -1,5 +1,10 @@
 using UnityEngine;
 
+/// <summary>
+/// Buff效果 - 具体实现者（Bridge Pattern - ConcreteImplementor）
+/// 实现装备的属性增益效果
+/// </summary>
+
 public enum StatType
 {
     strength,

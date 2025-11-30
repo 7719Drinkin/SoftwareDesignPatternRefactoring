@@ -1,6 +1,10 @@
 using System.Collections;
 using UnityEngine;
 
+// ========== Composite Pattern (Client) ==========
+// 目的：使用组合模式统一管理 UI 元素
+// 作用：通过组合模式简化 Tooltip 和 UI 元素组的操作
+// ===============================================
 public class UI : MonoBehaviour
 {
     [SerializeField] private GameObject characterUI;
@@ -12,8 +16,9 @@ public class UI : MonoBehaviour
     [SerializeField] private GameObject popUpTextPrefab;
 
     private bool isOpen;
-    private IAudioManager audioManager;
-    private IGameManager gameManager;
+    
+    // ========== 使用 Facade Pattern 简化服务访问 ==========
+    private GameFacade game => GameFacade.Instance;
 
     public UI_ItemToolTip itemToolTip;
     public UI_StatToolTip statToolTip;
@@ -24,18 +29,61 @@ public class UI : MonoBehaviour
     private UI_FadeOut startFadeIn;
     private bool isFadeIn;
 
+    // ========== Composite Pattern ==========
+    private UIElementGroup tooltipGroup;        // Tooltip 组合组
+    private UIElementGroup deathUIGroup;        // 死亡界面 UI 元素组
+    private IUIComponent endTextComponent;       // 死亡文本组件引用
+    private IUIComponent restartButtonComponent; // 重启按钮组件引用
+    // =======================================
+
     void Start()
     {
-        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
-        gameManager = ServiceLocator.Instance.Get<IGameManager>();
-        
         itemToolTip = UI_ItemToolTip.instance;
         statToolTip = UI_StatToolTip.instance;
         skillToolTip = UI_SkillToolTip.instance;
         craftToolTip = UI_CraftToolTip.instance;
         startFadeIn = fadeIn.GetComponent<UI_FadeOut>();
 
+        // ========== 初始化组合模式 ==========
+        InitializeCompositeGroups();
+        // ===================================
+
+        // ========== 使用组合模式统一隐藏死亡界面 UI ==========
+        // 确保游戏开始时死亡界面被隐藏（场景重新加载时）
+        deathUIGroup?.Hide();
+        // =====================================================
+
         SwitchTo(inGameUI);
+    }
+
+    /// <summary>
+    /// 初始化组合模式组
+    /// </summary>
+    private void InitializeCompositeGroups()
+    {
+        // 创建 Tooltip 组合组
+        tooltipGroup = new UIElementGroup();
+        if (itemToolTip != null)
+            tooltipGroup.Add(new TooltipComponent(itemToolTip));
+        if (statToolTip != null)
+            tooltipGroup.Add(new TooltipComponent(statToolTip));
+        if (skillToolTip != null)
+            tooltipGroup.Add(new TooltipComponent(skillToolTip));
+        if (craftToolTip != null)
+            tooltipGroup.Add(new TooltipComponent(craftToolTip));
+
+        // 创建死亡界面 UI 元素组
+        deathUIGroup = new UIElementGroup();
+        if (endText != null)
+        {
+            endTextComponent = new UIElementComponent(endText);
+            deathUIGroup.Add(endTextComponent);
+        }
+        if (restartGameButton != null)
+        {
+            restartButtonComponent = new UIElementComponent(restartGameButton);
+            deathUIGroup.Add(restartButtonComponent);
+        }
     }
 
     private void Update()
@@ -44,18 +92,15 @@ public class UI : MonoBehaviour
         {
             if (!isOpen)
             {
-                audioManager.PlaySFX(23);
+                game.PlaySFX(23);
                 SwitchTo(characterUI);
-
-                if (gameManager != null)
-                    gameManager.PauseGame(true);
+                game.PauseGame(true);
             }
             else
             {
                 SwitchTo(inGameUI);
-                if (gameManager != null)
-                    gameManager.PauseGame(false);
-                audioManager.PlaySFX(23);
+                game.PauseGame(false);
+                game.PlaySFX(23);
             }
 
             isOpen = !isOpen;
@@ -64,18 +109,9 @@ public class UI : MonoBehaviour
 
     public void SwitchTo(GameObject _menu)
     {
-        // 检查并关闭所有tooltip
-        if (itemToolTip != null && itemToolTip.gameObject.activeSelf)
-            itemToolTip.HideToolTip();
-
-        if (statToolTip != null && statToolTip.gameObject.activeSelf)
-            statToolTip.HideStatToolTip();
-
-        if (skillToolTip != null && skillToolTip.gameObject.activeSelf)
-            skillToolTip.HideSkillToolTip();
-
-        if (craftToolTip != null && craftToolTip.gameObject.activeSelf)
-            craftToolTip.HideCraftToolTip();
+        // ========== 使用组合模式统一关闭所有 Tooltip ==========
+        tooltipGroup?.Hide();
+        // =====================================================
 
         // 先关闭除 fadeIn 外的其它子物体
         for (int i = 0; i < transform.childCount; i++)
@@ -115,11 +151,15 @@ public class UI : MonoBehaviour
     {
         yield return new WaitForSeconds(2);
 
-        endText.SetActive(true);
+        // ========== 使用组合模式按顺序显示死亡界面 UI ==========
+        // 先显示 endText（使用 deathUIGroup 中的组件）
+        endTextComponent?.Show();
 
         yield return new WaitForSeconds(1);
 
-        restartGameButton.SetActive(true);
+        // 再显示 restartGameButton（使用 deathUIGroup 中的组件）
+        restartButtonComponent?.Show();
+        // =====================================================
     }
 
     public void CreateUI_PopUpText(string text)
@@ -149,9 +189,9 @@ public class UI : MonoBehaviour
             tmp.text = text;
     }
 
-    public void RestartGame() => gameManager.ReStartScene();
+    public void RestartGame() => game.RestartScene();
 
-    public void PlayCLickSFX() => audioManager.PlaySFX(25);
+    public void PlayCLickSFX() => game.PlaySFX(25);
 
-    public void PlayButtonSFX() => audioManager.PlaySFX(24);
+    public void PlayButtonSFX() => game.PlaySFX(24);
 }

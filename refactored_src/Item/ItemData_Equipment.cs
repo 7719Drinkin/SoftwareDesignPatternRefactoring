@@ -9,6 +9,18 @@ public enum EquipmentType
     Flask
 }
 
+// ========== Bridge Pattern (Abstraction) ==========
+// 装备系统采用桥接模式，将装备和效果分离
+// - 装备类型（Weapon, Armor等）可以独立变化
+// - 效果实现（Fire, Heal等）可以独立变化
+// - 通过 itemEffects[] 桥接，灵活组合
+// ===================================================
+
+/// <summary>
+/// 装备数据 - 抽象部分（Bridge Pattern - Abstraction）
+/// 通过组合 ItemEffect[] 实现效果，而不是继承
+/// 这样装备和效果可以独立变化和扩展
+/// </summary>
 [CreateAssetMenu(fileName = "New Item Data", menuName = "Data/Equipment")]
 public class ItemData_Equipment : ItemData
 {
@@ -16,7 +28,9 @@ public class ItemData_Equipment : ItemData
 
     [Header("Unique effect")]
     public float itemCooldown;
-    public ItemEffect[] itemEffects;
+    
+    // ========== Bridge：桥接到效果实现 ==========
+    public ItemEffect[] itemEffects;  // 桥接：装备持有效果引用，而不是继承
     [TextArea]
     public string itemEffectDescription;
 
@@ -45,10 +59,15 @@ public class ItemData_Equipment : ItemData
     [Header("Craft requirements")]
     public List<InventoryItem> craftingMaterials;
 
+    /// <summary>
+    /// 执行装备效果 - 桥接方法（Bridge Pattern）
+    /// 通过桥接调用效果实现，而不是在装备类中硬编码效果逻辑
+    /// </summary>
     public void ExecuteItemEffect(Transform position)
     {
         bool effectExecuted = false;
 
+        // ========== Bridge Pattern：通过桥接调用效果实现 ==========
         foreach (var item in itemEffects)
         {
             if (item.ExecuteEffect(position))

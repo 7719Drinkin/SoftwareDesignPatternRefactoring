@@ -4,15 +4,11 @@ public class PlayerAnimationTriggers : MonoBehaviour
 {
     private Player player => GetComponentInParent<Player>();
 
-    // 服务依赖
-    private IAudioManager audioManager;
-    private IInventory inventory;
-
-    private void Awake()
-    {
-        audioManager = ServiceLocator.Instance.Get<IAudioManager>();
-        inventory = ServiceLocator.Instance.Get<IInventory>();
-    }
+    // ========== 使用 Facade Pattern 简化服务访问 ==========
+    // Before: audioManager = ServiceLocator.Instance.Get<IAudioManager>();
+    // After:  GameFacade.Instance.Audio
+    
+    private GameFacade game => GameFacade.Instance;
 
     private void AnimationTrigger()
     {
@@ -37,8 +33,8 @@ public class PlayerAnimationTriggers : MonoBehaviour
                         target.ThunderStike();
                 }
 
-                if (inventory.GetEquipment(EquipmentType.Weapon) && inventory.CanUseWeapon())
-                    inventory.GetEquipment(EquipmentType.Weapon).ExecuteItemEffect(hit.transform);
+                if (game.Inventory.GetEquipment(EquipmentType.Weapon) && game.Inventory.CanUseWeapon())
+                    game.Inventory.GetEquipment(EquipmentType.Weapon).ExecuteItemEffect(hit.transform);
             }
 
             if (hit.GetComponent<Chest>() != null&& !hit.GetComponent<Chest>().opened)
@@ -66,8 +62,7 @@ public class PlayerAnimationTriggers : MonoBehaviour
 
     private void ThrowSword()
     {
-        audioManager.PlaySFX(33);
-
-        ServiceLocator.Instance.Get<ISkillManager>().Sword.CreateSword();
+        game.PlaySFX(33);
+        game.Skills.Sword.CreateSword();
     }
 }

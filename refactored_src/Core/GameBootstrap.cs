@@ -33,6 +33,7 @@ public class GameBootstrap : MonoBehaviour
     {
         // 确保场景切换时旧的服务不会残留
         ServiceLocator.Reset();
+        GameFacade.Reset();
 
         // 1. 自动查找服务（如果未在Inspector中设置）
         FindServices();
@@ -40,7 +41,10 @@ public class GameBootstrap : MonoBehaviour
         // 2. 注册核心服务到ServiceLocator
         RegisterCoreServices();
 
-        // 3. 验证服务注册
+        // 3. 初始化外观模式（Facade Pattern）
+        GameFacade.Instance.Initialize();
+
+        // 4. 验证服务注册
         if (debugMode)
         {
             ValidateServices();

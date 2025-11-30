@@ -1,5 +1,9 @@
 using UnityEngine;
 
+/// <summary>
+/// 火焰效果 - 具体实现者（Bridge Pattern - ConcreteImplementor）
+/// 实现装备的火焰攻击效果
+/// </summary>
 [CreateAssetMenu(fileName = "Fire effect", menuName = "Data/Item effect/Fire Effect")]
 public class Fire_Effect : ItemEffect
 {
