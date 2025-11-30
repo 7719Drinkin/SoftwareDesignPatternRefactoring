@@ -1,15 +1,19 @@
 using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// 飞行效果 - 具体实现者（Bridge Pattern - ConcreteImplementor）
+/// 直接实现 IItemEffect 接口
+/// </summary>
 [CreateAssetMenu(fileName = "Fly effect", menuName = "Data/Item effect/Fly")]
-public class Fly_Effect : ItemEffect
+public class Fly_Effect : ScriptableObject, IItemEffect
 {
     [Header("速度提升设置")]
     [SerializeField] private float speedMultiplier = 1.3f; // 速度倍数
     [SerializeField] private float jumpForce = 1.2f; // 跳跃力度倍数
     [SerializeField] private float duration = 3f; // 持续时间（秒）
 
-    public override bool ExecuteEffect(Transform position)
+    public bool ExecuteEffect(Transform position)
     {
         var playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
         if (playerManager.Player != null)

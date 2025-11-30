@@ -23,8 +23,6 @@ public class NightBornWaveState : EnemyState
         defaultGravityScale = enemy.rb.gravityScale;
         enemy.rb.gravityScale = 0;
 
-        enemy.ZeroVelocity();
-
         audioManager.PlaySFX(51);
 
         stateTimer = Mathf.Infinity;
@@ -43,6 +41,8 @@ public class NightBornWaveState : EnemyState
     public override void Update()
     {
         base.Update();
+
+        enemy.ZeroVelocity();
 
         if (stateTimer < 0)
             stateMachine.ChangeState(enemy.battleState);

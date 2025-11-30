@@ -11,6 +11,8 @@ public class PlayerState
     protected IAudioManager audioManager;
     protected IInventory inventory;
     protected ISaveManagerService saveManager;
+    protected IAmuletSkillManager amuletSkillManager;
+    protected IEquipmentUsageManager equipmentUsageManager;
 
     protected float xInput;
     protected float yInput;
@@ -32,13 +34,17 @@ public class PlayerState
         rb = player.rb;
         triggerCalled = false;
 
-        // 初始化服务（延迟初始化，按需获取）
+        // 初始化服务（延迟初始化，按需获取）- 使用 GameFacade（外观模式）
         if (audioManager == null)
-            audioManager = ServiceLocator.Instance.Get<IAudioManager>();
+            audioManager = GameFacade.Instance.Audio;
         if (inventory == null)
-            inventory = ServiceLocator.Instance.Get<IInventory>();
+            inventory = GameFacade.Instance.Inventory;
         if (saveManager == null)
-            saveManager = ServiceLocator.Instance.Get<ISaveManagerService>();
+            saveManager = GameFacade.Instance.Save;
+        if (amuletSkillManager == null)
+            amuletSkillManager = GameFacade.Instance.AmuletSkills;
+        if (equipmentUsageManager == null)
+            equipmentUsageManager = GameFacade.Instance.EquipmentUsage;
     }
 
     public virtual void Update()

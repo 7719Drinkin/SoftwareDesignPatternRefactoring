@@ -25,9 +25,8 @@ public class GameBootstrap : MonoBehaviour
     [SerializeField] private SkillManager skillManager;
     [SerializeField] private SaveManager saveManager;
     [SerializeField] private DroppedItemManager droppedItemManager;
-
-    [Header("Debug")]
-    [SerializeField] private bool debugMode = true;
+    [SerializeField] private EquipmentUsageManager equipmentUsageManager;
+    [SerializeField] private AmuletSkillManager amuletSkillManager;
 
     private void Awake()
     {
@@ -43,12 +42,6 @@ public class GameBootstrap : MonoBehaviour
 
         // 3. 初始化外观模式（Facade Pattern）
         GameFacade.Instance.Initialize();
-
-        // 4. 验证服务注册
-        if (debugMode)
-        {
-            ValidateServices();
-        }
     }
 
     /// <summary>
@@ -76,6 +69,12 @@ public class GameBootstrap : MonoBehaviour
 
         if (droppedItemManager == null)
             droppedItemManager = FindObjectOfType<DroppedItemManager>();
+
+        if (equipmentUsageManager == null)
+            equipmentUsageManager = FindObjectOfType<EquipmentUsageManager>();
+
+        if (amuletSkillManager == null)
+            amuletSkillManager = FindObjectOfType<AmuletSkillManager>();
     }
 
     /// <summary>
@@ -112,33 +111,18 @@ public class GameBootstrap : MonoBehaviour
         if (droppedItemManager != null)
             ServiceLocator.Instance.RegisterSingleton<IDroppedItemManager>(droppedItemManager);
 
+        // 装备使用管理器（通过接口注册）
+        if (equipmentUsageManager != null)
+            ServiceLocator.Instance.RegisterSingleton<IEquipmentUsageManager>(equipmentUsageManager);
+
+        // 护身符技能管理器（通过接口注册）
+        if (amuletSkillManager != null)
+            ServiceLocator.Instance.RegisterSingleton<IAmuletSkillManager>(amuletSkillManager);
+
         // ========== 阶段2：注册事件系统 ==========
         // 游戏事件总线（Observer Pattern）
         GameEventBus eventBus = new GameEventBus();
         ServiceLocator.Instance.RegisterSingleton<GameEventBus>(eventBus);
-    }
-
-    /// <summary>
-    /// 验证服务注册是否成功
-    /// </summary>
-    private void ValidateServices()
-    {
-        // 测试获取服务（使用接口）
-        var audio = ServiceLocator.Instance.Get<IAudioManager>();
-        var game = ServiceLocator.Instance.Get<IGameManager>();
-        var player = ServiceLocator.Instance.Get<IPlayerManager>();
-        var inv = ServiceLocator.Instance.Get<IInventory>();
-        var skill = ServiceLocator.Instance.Get<ISkillManager>();
-        var save = ServiceLocator.Instance.Get<ISaveManagerService>();
-        var dropped = ServiceLocator.Instance.Get<IDroppedItemManager>();
-
-        Debug.Log($"IAudioManager: {(audio != null ? "✓" : "✗")}");
-        Debug.Log($"IGameManager: {(game != null ? "✓" : "✗")}");
-        Debug.Log($"IPlayerManager: {(player != null ? "✓" : "✗")}");
-        Debug.Log($"IInventory: {(inv != null ? "✓" : "✗")}");
-        Debug.Log($"ISkillManager: {(skill != null ? "✓" : "✗")}");
-        Debug.Log($"ISaveManagerService: {(save != null ? "✓" : "✗")}");
-        Debug.Log($"IDroppedItemManager: {(dropped != null ? "✓" : "✗")}");
     }
 }
 

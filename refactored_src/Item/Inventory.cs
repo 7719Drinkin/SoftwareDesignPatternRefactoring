@@ -35,27 +35,6 @@ public class Inventory : MonoBehaviour, ISaveManager, IInventory
     private UI_EquipmentSlot[] equipmentSlot;               // 装备槽位数组
     private UI_StatSlot[] statSlot;                         // 属性槽位数组
 
-    [Header("Items cooldown")]
-    private float lastTimeUseWeapon;                        // 上次使用武器时间
-    private float lastTimeUseArmor;                         // 上次使用护甲时间
-    private float lastTimeUseAmulet;                        // 上次使用护身符时间
-    private float lastTimeUseFlask;                         // 上次使用药水时间
-
-    #region 与护身符相关的技能解锁
-    [Header("Use amulet")]
-    [SerializeField] private bool dashUseAmulet;
-    [SerializeField] private bool jumpUseAmulet;
-    [SerializeField] private bool swordUseAmulet;
-
-    public bool DashUseAmulet { get => dashUseAmulet; set => dashUseAmulet = value; }
-    public bool JumpUseAmulet { get => jumpUseAmulet; set => jumpUseAmulet = value; }
-    public bool SwordUseAmulet { get => swordUseAmulet; set => swordUseAmulet = value; }
-
-    [SerializeField] private UI_SkillTreeSlot dashUseAmuletUnlockButton;   // 冲刺护身符解锁按钮
-    [SerializeField] private UI_SkillTreeSlot jumpUseAmuletUnlockButton;     // 跳跃护身符解锁按钮
-    [SerializeField] private UI_SkillTreeSlot swordUseAmuletUnlockButton;  // 剑攻击护身符解锁按钮
-
-    #endregion
 
     [Header("Database")]
     public List<InventoryItem> loadedItems;
@@ -86,35 +65,6 @@ public class Inventory : MonoBehaviour, ISaveManager, IInventory
         statSlot = statSlotParent.GetComponentsInChildren<UI_StatSlot>();
 
         AddStartItem();
-
-        // 初始化冷却时间
-        lastTimeUseWeapon = -100;
-        lastTimeUseArmor = -100;
-        lastTimeUseAmulet = -100;
-        lastTimeUseFlask = -100;
-
-        // 绑定技能解锁按钮事件
-        dashUseAmuletUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockDashUseAmulet);
-        jumpUseAmuletUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockJumpUseAmulet);
-        swordUseAmuletUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockSwordUseAmulet);
-
-        // 延迟初始化，确保保存系统已经加载完成
-        StartCoroutine(DelayedInitialization());
-    }
-
-    /// <summary>
-    /// 延迟初始化协程
-    /// </summary>
-    /// <returns></returns>
-    private System.Collections.IEnumerator DelayedInitialization()
-    {
-        // 等待一帧，确保所有保存数据都已加载
-        yield return null;
-
-        // 根据技能槽的解锁状态初始化护身符使用状态
-        dashUseAmulet = dashUseAmuletUnlockButton.unlocked;
-        jumpUseAmulet = jumpUseAmuletUnlockButton.unlocked;
-        swordUseAmulet = swordUseAmuletUnlockButton.unlocked;
     }
 
     /// <summary>
@@ -181,23 +131,6 @@ public class Inventory : MonoBehaviour, ISaveManager, IInventory
             Equipment = newEquipment,
             IsEquipped = true
         });
-
-        // 重置装备使用冷却时间
-        switch (newEquipment.equipmentType)
-        {
-            case EquipmentType.Weapon:
-                lastTimeUseWeapon = -100;
-                break;
-            case EquipmentType.Armor:
-                lastTimeUseArmor = -100;
-                break;
-            case EquipmentType.Amulet:
-                lastTimeUseAmulet = -100;
-                break;
-            case EquipmentType.Flask:
-                lastTimeUseFlask = -100;
-                break;
-        }
 
         UpdateSlotUI();
     }
@@ -404,150 +337,6 @@ public class Inventory : MonoBehaviour, ISaveManager, IInventory
                 equipedItem = item.Key;
 
         return equipedItem;
-    }
-
-    /// <summary>
-    /// 检查是否可以使用武器
-    /// </summary>
-    /// <returns>是否可以使用武器</returns>
-    public bool CanUseWeapon()
-    {
-        ItemData_Equipment currentWeapon = GetEquipment(EquipmentType.Weapon);
-
-        if (currentWeapon == null)
-            return false;
-
-        return Time.time > lastTimeUseWeapon + currentWeapon.itemCooldown;
-    }
-
-    /// <summary>
-    /// 消耗武器冷却时间
-    /// </summary>
-    public void ConsumeWeaponCooldown()
-    {
-        ItemData_Equipment currentWeapon = GetEquipment(EquipmentType.Weapon);
-        if (currentWeapon != null)
-        {
-            lastTimeUseWeapon = Time.time;
-
-            // ========== 发布装备使用事件（Observer Pattern） ==========
-            eventBus?.Publish(new EquipmentUsedEvent
-            {
-                EquipmentType = EquipmentType.Weapon
-            });
-        }
-    }
-
-    /// <summary>
-    /// 检查是否可以使用护甲
-    /// </summary>
-    /// <returns>是否可以使用护甲</returns>
-    public bool CanUseArmor()
-    {
-        ItemData_Equipment currentArmor = GetEquipment(EquipmentType.Armor);
-
-        if ((currentArmor == null))
-            return false;
-
-        bool canUseArmor = Time.time > lastTimeUseArmor + currentArmor.itemCooldown;
-        if (canUseArmor)
-        {
-            lastTimeUseArmor = Time.time;
-
-            // ========== 发布装备使用事件（Observer Pattern） ==========
-            eventBus?.Publish(new EquipmentUsedEvent
-            {
-                EquipmentType = EquipmentType.Armor
-            });
-        }
-
-        return canUseArmor;
-    }
-
-    /// <summary>
-    /// 检查是否可以使用护身符
-    /// </summary>
-    /// <returns>是否可以使用护身符</returns>
-    public bool CanUseAmulet()
-    {
-        ItemData_Equipment currentAmulet = GetEquipment(EquipmentType.Amulet);
-
-        if ((currentAmulet == null))
-            return false;
-
-        bool canUseAmulet = Time.time > lastTimeUseAmulet + currentAmulet.itemCooldown;
-        if (canUseAmulet)
-        {
-            lastTimeUseAmulet = Time.time;
-
-            // ========== 发布装备使用事件（Observer Pattern） ==========
-            eventBus?.Publish(new EquipmentUsedEvent
-            {
-                EquipmentType = EquipmentType.Amulet
-            });
-        }
-
-        return canUseAmulet;
-    }
-
-    /// <summary>
-    /// 检查是否可以使用药水
-    /// </summary>
-    /// <returns>是否可以使用药水</returns>
-    public bool CanUseFlask()
-    {
-        ItemData_Equipment currentFlask = GetEquipment(EquipmentType.Flask);
-
-        if ((currentFlask == null))
-            return false;
-
-        bool canUseFlask = Time.time > lastTimeUseFlask + currentFlask.itemCooldown;
-        if (canUseFlask)
-        {
-            lastTimeUseFlask = Time.time;
-            audioManager.PlaySFX(38); // 药水使用音效
-
-            // ========== 发布装备使用事件（Observer Pattern） ==========
-            eventBus?.Publish(new EquipmentUsedEvent
-            {
-                EquipmentType = EquipmentType.Flask
-            });
-        }
-
-        return canUseFlask;
-    }
-
-    /// <summary>
-    /// 解锁冲刺时使用护身符
-    /// </summary>
-    public void UnlockDashUseAmulet()
-    {
-        if (dashUseAmuletUnlockButton.CanUnlockSkillSlot() && dashUseAmuletUnlockButton.unlocked)
-        {
-            dashUseAmulet = true;
-        }
-    }
-
-    /// <summary>
-    /// 解锁跳跃时使用护身符
-    /// </summary>
-    public void UnlockJumpUseAmulet()
-    {
-        if (jumpUseAmuletUnlockButton.CanUnlockSkillSlot() && jumpUseAmuletUnlockButton.unlocked)
-        {
-            jumpUseAmulet = true;
-        }
-    }
-
-    /// <summary>
-    /// 解锁剑攻击时使用护身符
-    /// </summary>
-    public void UnlockSwordUseAmulet()
-    {
-        if (swordUseAmuletUnlockButton.CanUnlockSkillSlot() && swordUseAmuletUnlockButton.unlocked)
-        {
-            swordUseAmulet = true;
-        }
     }
 
     /// <summary>

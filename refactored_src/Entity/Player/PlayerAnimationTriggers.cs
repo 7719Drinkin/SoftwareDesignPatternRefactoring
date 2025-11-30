@@ -33,7 +33,7 @@ public class PlayerAnimationTriggers : MonoBehaviour
                         target.ThunderStike();
                 }
 
-                if (game.Inventory.GetEquipment(EquipmentType.Weapon) && game.Inventory.CanUseWeapon())
+                if (game.Inventory.GetEquipment(EquipmentType.Weapon) && game.EquipmentUsage.CanUseWeapon())
                     game.Inventory.GetEquipment(EquipmentType.Weapon).ExecuteItemEffect(hit.transform);
             }
 

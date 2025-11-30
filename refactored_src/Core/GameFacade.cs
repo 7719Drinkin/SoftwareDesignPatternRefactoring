@@ -40,6 +40,8 @@ public class GameFacade
     private IGameManager gameManager;
     private ISaveManagerService saveManager;
     private IDroppedItemManager droppedItemManager;
+    private IEquipmentUsageManager equipmentUsageManager;
+    private IAmuletSkillManager amuletSkillManager;
     private GameEventBus eventBus;
 
     /// <summary>
@@ -69,6 +71,8 @@ public class GameFacade
         gameManager = ServiceLocator.Instance.Get<IGameManager>();
         saveManager = ServiceLocator.Instance.Get<ISaveManagerService>();
         droppedItemManager = ServiceLocator.Instance.Get<IDroppedItemManager>();
+        equipmentUsageManager = ServiceLocator.Instance.Get<IEquipmentUsageManager>();
+        amuletSkillManager = ServiceLocator.Instance.Get<IAmuletSkillManager>();
         eventBus = ServiceLocator.Instance.Get<GameEventBus>();
 
         Debug.Log("[GameFacade] Initialized with all services (Facade Pattern)");
@@ -121,6 +125,16 @@ public class GameFacade
     /// 掉落物管理器 - 适配器属性
     /// </summary>
     public IDroppedItemManager DroppedItems => droppedItemManager;
+
+    /// <summary>
+    /// 装备使用管理器 - 适配器属性
+    /// </summary>
+    public IEquipmentUsageManager EquipmentUsage => equipmentUsageManager;
+
+    /// <summary>
+    /// 护身符技能管理器 - 适配器属性
+    /// </summary>
+    public IAmuletSkillManager AmuletSkills => amuletSkillManager;
 
     /// <summary>
     /// 事件总线 - 适配器属性

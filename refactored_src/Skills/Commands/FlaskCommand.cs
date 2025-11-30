@@ -7,17 +7,19 @@ using UnityEngine;
 public class FlaskCommand : ISkillCommand
 {
     private readonly IInventory inventory;
+    private readonly IEquipmentUsageManager equipmentUsageManager;
     private readonly Transform playerTransform;
 
-    public FlaskCommand(IInventory inventory, Transform playerTransform)
+    public FlaskCommand(IInventory inventory, IEquipmentUsageManager equipmentUsageManager, Transform playerTransform)
     {
         this.inventory = inventory;
+        this.equipmentUsageManager = equipmentUsageManager;
         this.playerTransform = playerTransform;
     }
 
     public void Execute()
     {
-        if (inventory.CanUseFlask())
+        if (equipmentUsageManager.CanUseFlask())
         {
             ItemData_Equipment currentFlask = inventory.GetEquipment(EquipmentType.Flask);
             

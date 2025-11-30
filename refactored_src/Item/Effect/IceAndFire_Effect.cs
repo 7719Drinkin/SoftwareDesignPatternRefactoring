@@ -1,12 +1,16 @@
 using UnityEngine;
 
+/// <summary>
+/// 冰火效果 - 具体实现者（Bridge Pattern - ConcreteImplementor）
+/// 直接实现 IItemEffect 接口
+/// </summary>
 [CreateAssetMenu(fileName = "Ice and fire effect", menuName = "Data/Item effect/Ice and fire")]
-public class IceAndFire_Effect : ItemEffect
+public class IceAndFire_Effect : ScriptableObject, IItemEffect
 {
     [SerializeField] private GameObject iceAndFirePrefab;
     [SerializeField] private float xVelocity;
 
-    public override bool ExecuteEffect(Transform respondPosition)
+    public bool ExecuteEffect(Transform respondPosition)
     {
         Player player = ServiceLocator.Instance.Get<IPlayerManager>().Player;
 

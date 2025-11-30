@@ -126,10 +126,10 @@ public class Player : Entity
         // 创建 InputHandler（Invoker）
         inputHandler = gameObject.AddComponent<PlayerInputHandler>();
 
-        // 创建具体命令并设置到 Invoker
-        inputHandler.SetDashCommand(new DashCommand(this, skill, inventory));
+        // 创建具体命令并设置到 Invoker（使用 GameFacade 获取管理器）
+        inputHandler.SetDashCommand(new DashCommand(this, skill, inventory, GameFacade.Instance.AmuletSkills, GameFacade.Instance.EquipmentUsage));
         inputHandler.SetCrystalCommand(new CrystalCommand(skill));
-        inputHandler.SetFlaskCommand(new FlaskCommand(inventory, transform));
+        inputHandler.SetFlaskCommand(new FlaskCommand(inventory, GameFacade.Instance.EquipmentUsage, transform));
         inputHandler.SetAssassinateCommand(new AssassinateCommand(this, skill));
     }
 

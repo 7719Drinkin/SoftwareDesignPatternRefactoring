@@ -217,10 +217,10 @@ public class Sword_Skill_Controller : MonoBehaviour
             {
                 collision.GetComponent<Enemy>().FreezeTimeFor(freezeTimeDuration);
 
-                ItemData_Equipment equipedAmulet = ServiceLocator.Instance.Get<IInventory>().GetEquipment(EquipmentType.Amulet);
+                ItemData_Equipment equipedAmulet = GameFacade.Instance.Inventory.GetEquipment(EquipmentType.Amulet);
 
                 if (equipedAmulet != null && canUseAmulet)
-                    if (ServiceLocator.Instance.Get<IInventory>().CanUseAmulet())
+                    if (GameFacade.Instance.EquipmentUsage.CanUseAmulet())
                         equipedAmulet.ExecuteItemEffect(collision.GetComponent<Enemy>().transform);
             }
 

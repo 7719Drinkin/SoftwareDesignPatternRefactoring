@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 /// <summary>
 /// 剑类型枚举
@@ -16,6 +15,7 @@ public enum SwordType
 /// 剑技能 - 继承自Skill基类
 /// 实现剑的发射、瞄准和不同类型的剑效果
 /// 支持弹跳、穿透、旋转等特殊效果
+/// 通过事件总线接收解锁事件，实现与解锁逻辑的解耦
 /// </summary>
 public class Sword_Skill : Skill
 {
@@ -24,19 +24,16 @@ public class Sword_Skill : Skill
     [Header("Bounce info")]
     [SerializeField] private int bounceAmount;             // 弹跳次数
     [SerializeField] private float BounceGravity;          // 弹跳剑重力
-    [SerializeField] private UI_SkillTreeSlot bounceUnlockButton; // 弹跳剑解锁按钮
 
     [Header("Pierce info")]
     [SerializeField] private int pierceAmount;             // 穿透次数
     [SerializeField] private float pierceGravity;           // 穿透剑重力
-    [SerializeField] private UI_SkillTreeSlot pierceUnlockButton; // 穿透剑解锁按钮
 
     [Header("Spin info")]
     [SerializeField] private float hitCooldown;            // 旋转剑攻击冷却
     [SerializeField] private float maxTravelDistance;      // 最大飞行距离
     [SerializeField] private float spinDurantion;          // 旋转持续时间
     [SerializeField] private float spinGravity;            // 旋转剑重力
-    [SerializeField] private UI_SkillTreeSlot spinUnlockButton; // 旋转剑解锁按钮
 
     [Header("Sword info")]
     public bool sword;                                     // 是否解锁剑技能
@@ -44,7 +41,6 @@ public class Sword_Skill : Skill
     [SerializeField] private Vector2 launchForce;         // 发射力度
     [SerializeField] private float swordGravity;           // 剑重力
     [SerializeField] private float freezeTimeDuration;    // 冰冻时间持续时间
-    [SerializeField] private UI_SkillTreeSlot swordUnlockButton; // 剑技能解锁按钮
 
     private Vector2 finalDir;                              // 最终发射方向
 
@@ -56,9 +52,9 @@ public class Sword_Skill : Skill
 
     [Header("Freeze info")]
     private bool canFreezeEnemy;                           // 是否可以冰冻敌人
-    [SerializeField] private UI_SkillTreeSlot freezeEnemyUnlockButton; // 冰冻敌人解锁按钮
 
     private GameObject[] dots;                              // 瞄准点数组
+    private GameEventBus eventBus;
 
     /// <summary>
     /// 初始化剑技能
@@ -69,12 +65,44 @@ public class Sword_Skill : Skill
 
         StartCoroutine(InitializeWhenPlayerReady());
 
-        // 绑定技能解锁按钮事件
-        swordUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockSword);
-        bounceUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockBounce);
-        pierceUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockPierce);
-        spinUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockSpin);
-        freezeEnemyUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockFreezeEnemy);
+        // ========== 订阅技能解锁事件（Observer Pattern） ==========
+        eventBus = ServiceLocator.Instance.Get<GameEventBus>();
+        eventBus?.Subscribe<SkillUnlockedEvent>(OnSkillUnlocked);
+        // ===========================================================
+    }
+
+    private void OnDestroy()
+    {
+        // 取消订阅
+        eventBus?.Unsubscribe<SkillUnlockedEvent>(OnSkillUnlocked);
+    }
+
+    /// <summary>
+    /// 处理技能解锁事件 - 从解锁类接收解锁通知
+    /// </summary>
+    private void OnSkillUnlocked(SkillUnlockedEvent evt)
+    {
+        switch (evt.SkillName)
+        {
+            case "Sword":
+                sword = true;
+                break;
+            case "Bounce":
+                swordType = SwordType.Bounce;
+                SetupGravity();
+                break;
+            case "Pierce":
+                swordType = SwordType.Pierce;
+                SetupGravity();
+                break;
+            case "Spin":
+                swordType = SwordType.Spin;
+                SetupGravity();
+                break;
+            case "FreezeEnemy":
+                canFreezeEnemy = true;
+                break;
+        }
     }
 
     private System.Collections.IEnumerator InitializeWhenPlayerReady()
@@ -98,19 +126,8 @@ public class Sword_Skill : Skill
         // 等待一帧，确保所有保存数据都已加载
         yield return null;
         
-        // 根据技能槽的解锁状态初始化技能状态
-        sword = swordUnlockButton.unlocked;
-        canFreezeEnemy = freezeEnemyUnlockButton.unlocked;
-        
-        // 根据解锁状态设置剑的类型（优先级：旋转 > 穿透 > 弹跳 > 普通）
-        if (bounceUnlockButton.unlocked)
-            swordType = SwordType.Bounce;
-        else if (pierceUnlockButton.unlocked)
-            swordType = SwordType.Pierce;
-        else if (spinUnlockButton.unlocked)
-            swordType = SwordType.Spin;
-        else
-            swordType = SwordType.Regular;
+        // 注意：技能状态初始化现在由解锁类通过事件总线处理
+        // 解锁类会在 DelayedInitialization 中发布已解锁技能的事件
     }
 
     /// <summary>
@@ -175,7 +192,7 @@ public class Sword_Skill : Skill
         }
 
         // 设置剑的基本属性
-        newSwordScript.SetupSword(finalDir, swordGravity, player, canFreezeEnemy, freezeTimeDuration, ServiceLocator.Instance.Get<IInventory>().SwordUseAmulet);
+        newSwordScript.SetupSword(finalDir, swordGravity, player, canFreezeEnemy, freezeTimeDuration, GameFacade.Instance.AmuletSkills.SwordUseAmulet);
 
         player.AssignNewSword(newSword);
 
@@ -248,58 +265,4 @@ public class Sword_Skill : Skill
 
     #endregion
 
-    /// <summary>
-    /// 解锁剑技能
-    /// </summary>
-    private void UnlockSword()
-    {
-        if (swordUnlockButton.CanUnlockSkillSlot() && swordUnlockButton.unlocked)
-        {
-            sword = true;
-        }
-    }
-
-    /// <summary>
-    /// 解锁弹跳剑
-    /// </summary>
-    private void UnlockBounce()
-    {
-        if (bounceUnlockButton.CanUnlockSkillSlot() && bounceUnlockButton.unlocked)
-        {
-            swordType = SwordType.Bounce;
-        }
-    }
-
-    /// <summary>
-    /// 解锁穿透剑
-    /// </summary>
-    private void UnlockPierce()
-    {
-        if (pierceUnlockButton.CanUnlockSkillSlot() && pierceUnlockButton.unlocked)
-        {
-            swordType = SwordType.Pierce;
-        }
-    }
-
-    /// <summary>
-    /// 解锁旋转剑
-    /// </summary>
-    private void UnlockSpin()
-    {
-        if (spinUnlockButton.CanUnlockSkillSlot() && spinUnlockButton.unlocked)
-        {
-            swordType = SwordType.Spin;
-        }
-    }
-
-    /// <summary>
-    /// 解锁冰冻敌人效果
-    /// </summary>
-    private void UnlockFreezeEnemy()
-    {
-        if (freezeEnemyUnlockButton.CanUnlockSkillSlot() && freezeEnemyUnlockButton.unlocked)
-        {
-            canFreezeEnemy = true;
-        }
-    }
 }

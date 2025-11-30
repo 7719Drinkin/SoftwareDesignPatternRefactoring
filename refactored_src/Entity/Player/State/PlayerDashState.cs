@@ -43,7 +43,7 @@ public class PlayerDashState : PlayerState
             player.skill.Clone.CreateCloneOnDashOver();
             
             // ========== 发布技能使用事件到事件总线（Observer Pattern） ==========
-            var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
+            var eventBus = GameFacade.Instance.Events;
             eventBus?.Publish(new SkillUsedEvent
             {
                 SkillName = "CloneOnDash",

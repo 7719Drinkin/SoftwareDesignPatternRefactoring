@@ -1,63 +1,50 @@
 using System;
 using UnityEngine;
-using UnityEngine.UI;
 
+/// <summary>
+/// 格挡技能 - 继承自Skill基类
+/// 实现玩家的格挡和反击功能
+/// 通过事件总线接收解锁事件，实现与解锁逻辑的解耦
+/// </summary>
 public class Parry_Skill : Skill
 {
     [Header("Parry")]
     public bool parry;
-    [SerializeField] private UI_SkillTreeSlot parryUnlockButton;
 
     [Header("Fight back")]
     public bool fightBack;
-    [SerializeField] private UI_SkillTreeSlot fightBackUnlockButton;
+
+    private GameEventBus eventBus;
 
     protected override void Start()
     {
         base.Start();
 
-        parryUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockParry);
-        fightBackUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockFightBack);
-        
-        // 延迟初始化，确保保存系统已经加载完成
-        StartCoroutine(DelayedInitialization());
-    }
-    
-    private System.Collections.IEnumerator DelayedInitialization()
-    {
-        // 等待一帧，确保所有保存数据都已加载
-        yield return null;
-        
-        // 根据技能槽的解锁状态初始化技能状态
-        parry = parryUnlockButton.unlocked;
-        fightBack = fightBackUnlockButton.unlocked;
-
-        // 从存档加载时触发事件
-        var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
-        if (parry)
-            eventBus?.Publish(new SkillUnlockedEvent { SkillName = "Parry" });
+        // ========== 订阅技能解锁事件（Observer Pattern） ==========
+        eventBus = ServiceLocator.Instance.Get<GameEventBus>();
+        eventBus?.Subscribe<SkillUnlockedEvent>(OnSkillUnlocked);
+        // ===========================================================
     }
 
-    private void UnlockParry()
+    private void OnDestroy()
     {
-        if (parryUnlockButton.CanUnlockSkillSlot() && parryUnlockButton.unlocked)
+        // 取消订阅
+        eventBus?.Unsubscribe<SkillUnlockedEvent>(OnSkillUnlocked);
+    }
+
+    /// <summary>
+    /// 处理技能解锁事件 - 从解锁类接收解锁通知
+    /// </summary>
+    private void OnSkillUnlocked(SkillUnlockedEvent evt)
+    {
+        switch (evt.SkillName)
         {
-            parry = true;
-            
-            // ========== 发布技能解锁事件到事件总线（Observer Pattern） ==========
-            var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
-            eventBus?.Publish(new SkillUnlockedEvent
-            {
-                SkillName = "Parry"
-            });
-        }
-    }
-
-    private void UnlockFightBack()
-    {
-        if (fightBackUnlockButton.CanUnlockSkillSlot() && fightBackUnlockButton.unlocked)
-        {
-            fightBack = true;
+            case "Parry":
+                parry = true;
+                break;
+            case "FightBack":
+                fightBack = true;
+                break;
         }
     }
 }

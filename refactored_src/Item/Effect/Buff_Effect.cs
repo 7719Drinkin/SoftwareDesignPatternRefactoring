@@ -1,10 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// Buff效果 - 具体实现者（Bridge Pattern - ConcreteImplementor）
-/// 实现装备的属性增益效果
-/// </summary>
-
 public enum StatType
 {
     strength,
@@ -24,15 +19,19 @@ public enum StatType
     level
 }
 
+/// <summary>
+/// Buff效果 - 具体实现者（Bridge Pattern - ConcreteImplementor）
+/// 实现装备的属性增益效果
+/// 直接实现 IItemEffect 接口
 [CreateAssetMenu(fileName = "Buff effect", menuName = "Data/Item effect/Buff Effect")]
-public class Buff_Effect : ItemEffect
+public class Buff_Effect : ScriptableObject, IItemEffect
 {
     private PlayerStats stats;
     [SerializeField] private StatType bufftype;
     [SerializeField] private int buffAmount;
     [SerializeField] private float buffDuration;
 
-    public override bool ExecuteEffect(Transform position)
+    public bool ExecuteEffect(Transform position)
     {
         stats = ServiceLocator.Instance.Get<IPlayerManager>().Player.GetComponent<PlayerStats>();
         stats.IncreaseStatBy(buffAmount, buffDuration, StatToModify());

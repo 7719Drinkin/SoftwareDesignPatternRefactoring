@@ -33,7 +33,7 @@ public class Crystal_Skill_Controller : MonoBehaviour
 
     public void ChooseRandomEnemy()
     {
-        float radius = ServiceLocator.Instance.Get<ISkillManager>().Blackhole.GetBlackholeRadius();
+        float radius = GameFacade.Instance.Skills.Blackhole.GetBlackholeRadius();
 
         Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, radius, whatIsEnemy);
 
@@ -74,9 +74,9 @@ public class Crystal_Skill_Controller : MonoBehaviour
             {
                 player.stats.DoMagicalDamage(hit.GetComponent<CharacterStats>(), transform);
 
-                ItemData_Equipment equipedAmulet = ServiceLocator.Instance.Get<IInventory>().GetEquipment(EquipmentType.Amulet);
+                ItemData_Equipment equipedAmulet = GameFacade.Instance.Inventory.GetEquipment(EquipmentType.Amulet);
 
-                if (equipedAmulet != null && ServiceLocator.Instance.Get<IInventory>().CanUseAmulet())
+                if (equipedAmulet != null && GameFacade.Instance.EquipmentUsage.CanUseAmulet())
                     equipedAmulet.ExecuteItemEffect(hit.transform);
             }
         }

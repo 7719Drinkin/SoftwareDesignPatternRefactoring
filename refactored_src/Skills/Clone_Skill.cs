@@ -1,11 +1,14 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 
+/// <summary>
+/// 分身技能 - 继承自Skill基类
+/// 实现分身的创建、复制和水晶替代功能
+/// 通过事件总线接收解锁事件，实现与解锁逻辑的解耦
+/// </summary>
 public class Clone_Skill : Skill
 {
     [Header("Mirage info")]
-    [SerializeField] private UI_SkillTreeSlot mirageUnlockButton;
 #pragma warning disable CS0414
     private bool mirage;
 #pragma warning restore CS0414
@@ -13,41 +16,53 @@ public class Clone_Skill : Skill
     [Header("Clone info")]
     [SerializeField] private GameObject clonePrefab;
     [SerializeField] private float cloneDuration;
-    [SerializeField] private UI_SkillTreeSlot cloneUnlockButton;
     public bool clone;
 
     [Header("Clone can Duplicate")]
     [SerializeField] private int chanceToDuplicate;
-    [SerializeField] private UI_SkillTreeSlot duplicateUnlockButton;
     private bool canDuplicateClone;
 
     [Header("Crysatl instead of clone")]
-    [SerializeField] private UI_SkillTreeSlot crystalInsteadUnlockButton;
     public bool crystalInsteadOfClone;
+
+    private GameEventBus eventBus;
 
     protected override void Start()
     {
         base.Start();
 
-        mirageUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockMirage);
-        cloneUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockClone);
-        duplicateUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockDuplicate);
-        crystalInsteadUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockCrystalInstead);
-
-        // 延迟初始化，确保保存系统已经加载完成
-        StartCoroutine(DelayedInitialization());
+        // ========== 订阅技能解锁事件（Observer Pattern） ==========
+        eventBus = ServiceLocator.Instance.Get<GameEventBus>();
+        eventBus?.Subscribe<SkillUnlockedEvent>(OnSkillUnlocked);
+        // ===========================================================
     }
 
-    private System.Collections.IEnumerator DelayedInitialization()
+    private void OnDestroy()
     {
-        // 等待一帧，确保所有保存数据都已加载
-        yield return null;
+        // 取消订阅
+        eventBus?.Unsubscribe<SkillUnlockedEvent>(OnSkillUnlocked);
+    }
 
-        // 根据技能槽的解锁状态初始化技能状态
-        mirage = mirageUnlockButton.unlocked;
-        clone = cloneUnlockButton.unlocked;
-        canDuplicateClone = duplicateUnlockButton.unlocked;
-        crystalInsteadOfClone = crystalInsteadUnlockButton.unlocked;
+    /// <summary>
+    /// 处理技能解锁事件 - 从解锁类接收解锁通知
+    /// </summary>
+    private void OnSkillUnlocked(SkillUnlockedEvent evt)
+    {
+        switch (evt.SkillName)
+        {
+            case "Mirage":
+                mirage = true;
+                break;
+            case "Clone":
+                clone = true;
+                break;
+            case "Duplicate":
+                canDuplicateClone = true;
+                break;
+            case "CrystalInstead":
+                crystalInsteadOfClone = true;
+                break;
+        }
     }
 
     public void CreateClone(Transform _clonePosition, Vector3 _offset)
@@ -90,35 +105,4 @@ public class Clone_Skill : Skill
 		CreateClone(_transform != null ? _transform : (player != null ? player.transform : transform), _offset);
     }
 
-    private void UnlockMirage()
-    {
-        if (mirageUnlockButton.CanUnlockSkillSlot() && mirageUnlockButton.unlocked)
-        {
-            mirage = true;
-        }
-    }
-
-    private void UnlockClone()
-    {
-        if (cloneUnlockButton.CanUnlockSkillSlot() && cloneUnlockButton.unlocked)
-        {
-            clone = true;
-        }
-    }
-
-    private void UnlockDuplicate()
-    {
-        if (duplicateUnlockButton.CanUnlockSkillSlot() && duplicateUnlockButton.unlocked)
-        {
-            canDuplicateClone = true;
-        }
-    }
-
-    private void UnlockCrystalInstead()
-    {
-        if (crystalInsteadUnlockButton.CanUnlockSkillSlot() && crystalInsteadUnlockButton.unlocked)
-        {
-            crystalInsteadOfClone = true;
-        }
-    }
 }

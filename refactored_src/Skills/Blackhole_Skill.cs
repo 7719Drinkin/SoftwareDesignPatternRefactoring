@@ -1,7 +1,11 @@
 using System;
 using UnityEngine;
-using UnityEngine.UI;
 
+/// <summary>
+/// 黑洞技能 - 继承自Skill基类
+/// 实现黑洞的创建、成长和收缩功能
+/// 通过事件总线接收解锁事件，实现与解锁逻辑的解耦
+/// </summary>
 public class Blackhole_Skill : Skill
 {
     [SerializeField] private int amountOfAttacks;
@@ -13,33 +17,36 @@ public class Blackhole_Skill : Skill
     [SerializeField] private float growSpeed;
     [SerializeField] private float shrinkSpeed;
 
-    [SerializeField] private UI_SkillTreeSlot blackholeUnlockButton;
     public bool blackhole;
 
     private Blackhole_Skill_Controller currentBlackhole;
+    private GameEventBus eventBus;
 
     protected override void Start()
     {
         base.Start();
 
-        blackholeUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockBlackhole);
-        
-        // 延迟初始化，确保保存系统已经加载完成
-        StartCoroutine(DelayedInitialization());
+        // ========== 订阅技能解锁事件（Observer Pattern） ==========
+        eventBus = ServiceLocator.Instance.Get<GameEventBus>();
+        eventBus?.Subscribe<SkillUnlockedEvent>(OnSkillUnlocked);
+        // ===========================================================
     }
-    
-    private System.Collections.IEnumerator DelayedInitialization()
-    {
-        // 等待一帧，确保所有保存数据都已加载
-        yield return null;
-        
-        // 根据技能槽的解锁状态初始化技能状态
-        blackhole = blackholeUnlockButton.unlocked;
 
-        // 从存档加载时触发事件
-        var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
-        if (blackhole)
-            eventBus?.Publish(new SkillUnlockedEvent { SkillName = "Blackhole" });
+    private void OnDestroy()
+    {
+        // 取消订阅
+        eventBus?.Unsubscribe<SkillUnlockedEvent>(OnSkillUnlocked);
+    }
+
+    /// <summary>
+    /// 处理技能解锁事件 - 从解锁类接收解锁通知
+    /// </summary>
+    private void OnSkillUnlocked(SkillUnlockedEvent evt)
+    {
+        if (evt.SkillName == "Blackhole")
+        {
+            blackhole = true;
+        }
     }
 
     public void CreateBlackhole()
@@ -81,18 +88,4 @@ public class Blackhole_Skill : Skill
         return maxSize / 2;
     }
 
-    private void UnlockBlackhole()
-    {
-        if (blackholeUnlockButton.CanUnlockSkillSlot() && blackholeUnlockButton.unlocked)
-        {
-            blackhole = true;
-            
-            // ========== 发布技能解锁事件到事件总线（Observer Pattern） ==========
-            var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
-            eventBus?.Publish(new SkillUnlockedEvent
-            {
-                SkillName = "Blackhole"
-            });
-        }
-    }
 }

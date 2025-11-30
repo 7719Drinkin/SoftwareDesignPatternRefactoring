@@ -1,11 +1,10 @@
 using System;
 using UnityEngine;
-using UnityEngine.UI;
 
 /// <summary>
 /// 冲刺技能 - 继承自Skill基类
 /// 实现玩家的冲刺移动、冲刺分身和冲刺攻击功能
-/// 支持技能解锁和事件系统
+/// 通过事件总线接收解锁事件，实现与解锁逻辑的解耦
 /// </summary>
 public class Dash_Skill : Skill
 {
@@ -18,15 +17,14 @@ public class Dash_Skill : Skill
 
     [Header("Dash")]
     public bool dash;                                      // 是否解锁冲刺
-    [SerializeField] private UI_SkillTreeSlot dashUnlockButton; // 冲刺解锁按钮
 
     [Header("Clone on dash")]
     public bool cloneOnDash;                              // 是否冲刺时创建分身
-    [SerializeField] private UI_SkillTreeSlot cloneOnDashUnlockButton; // 冲刺分身解锁按钮
 
     [Header("Dash attack")]
     public bool dashAttack;                               // 是否解锁冲刺攻击
-    [SerializeField] private UI_SkillTreeSlot dashAttackUnlockButton; // 冲刺攻击解锁按钮
+
+    private GameEventBus eventBus;
 
     /// <summary>
     /// 初始化冲刺技能
@@ -35,37 +33,35 @@ public class Dash_Skill : Skill
     {
         base.Start();
 
-        // 绑定技能解锁按钮事件
-        dashUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockDash);
-        cloneOnDashUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockCloneOnDash);
-        dashAttackUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockCloneAttack);
-        
-        // 延迟初始化，确保保存系统已经加载完成
-        StartCoroutine(DelayedInitialization());
+        // ========== 订阅技能解锁事件（Observer Pattern） ==========
+        eventBus = ServiceLocator.Instance.Get<GameEventBus>();
+        eventBus?.Subscribe<SkillUnlockedEvent>(OnSkillUnlocked);
+        // ===========================================================
     }
-    
-    /// <summary>
-    /// 延迟初始化协程
-    /// </summary>
-    /// <returns></returns>
-    private System.Collections.IEnumerator DelayedInitialization()
-    {
-        // 等待一帧，确保所有保存数据都已加载
-        yield return null;
-        
-        // 根据技能槽的解锁状态初始化技能状态
-        dash = dashUnlockButton.unlocked;
-        cloneOnDash = cloneOnDashUnlockButton.unlocked;
-        dashAttack = dashAttackUnlockButton.unlocked;
 
-        // 触发已解锁技能的事件（从存档加载时）
-        var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
-        if (dash)
-            eventBus?.Publish(new SkillUnlockedEvent { SkillName = "Dash" });
-        if (cloneOnDash)
-            eventBus?.Publish(new SkillUnlockedEvent { SkillName = "CloneOnDash" });
-        if (dashAttack)
-            eventBus?.Publish(new SkillUnlockedEvent { SkillName = "DashAttack" });
+    private void OnDestroy()
+    {
+        // 取消订阅
+        eventBus?.Unsubscribe<SkillUnlockedEvent>(OnSkillUnlocked);
+    }
+
+    /// <summary>
+    /// 处理技能解锁事件 - 从解锁类接收解锁通知
+    /// </summary>
+    private void OnSkillUnlocked(SkillUnlockedEvent evt)
+    {
+        switch (evt.SkillName)
+        {
+            case "Dash":
+                dash = true;
+                break;
+            case "CloneOnDash":
+                cloneOnDash = true;
+                break;
+            case "DashAttack":
+                dashAttack = true;
+                break;
+        }
     }
 
     /// <summary>
@@ -84,57 +80,4 @@ public class Dash_Skill : Skill
         });
     }
 
-    /// <summary>
-    /// 解锁冲刺技能
-    /// </summary>
-    private void UnlockDash()
-    {
-        if (dashUnlockButton.CanUnlockSkillSlot() && dashUnlockButton.unlocked)
-        {
-            dash = true;
-            
-            // ========== 发布技能解锁事件到事件总线（Observer Pattern） ==========
-            var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
-            eventBus?.Publish(new SkillUnlockedEvent
-            {
-                SkillName = "Dash"
-            });
-        }
-    }
-
-    /// <summary>
-    /// 解锁冲刺分身技能
-    /// </summary>
-    private void UnlockCloneOnDash()
-    {
-        if (cloneOnDashUnlockButton.CanUnlockSkillSlot() && cloneOnDashUnlockButton.unlocked)
-        {
-            cloneOnDash = true;
-            
-            // ========== 发布技能解锁事件到事件总线（Observer Pattern） ==========
-            var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
-            eventBus?.Publish(new SkillUnlockedEvent
-            {
-                SkillName = "CloneOnDash"
-            });
-        }
-    }
-
-    /// <summary>
-    /// 解锁冲刺攻击技能
-    /// </summary>
-    private void UnlockCloneAttack()
-    {
-        if (dashAttackUnlockButton.CanUnlockSkillSlot() && dashAttackUnlockButton.unlocked)
-        {
-            dashAttack = true;
-            
-            // ========== 发布技能解锁事件到事件总线（Observer Pattern） ==========
-            var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
-            eventBus?.Publish(new SkillUnlockedEvent
-            {
-                SkillName = "DashAttack"
-            });
-        }
-    }
 }

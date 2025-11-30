@@ -39,9 +39,9 @@ public class PlayerStats : CharacterStats
     {
         base.DecreaseHealthBy(damage);
 
-        ItemData_Equipment currentArmor = ServiceLocator.Instance.Get<IInventory>().GetEquipment(EquipmentType.Armor);
+        ItemData_Equipment currentArmor = GameFacade.Instance.Inventory.GetEquipment(EquipmentType.Armor);
 
-        if (!ServiceLocator.Instance.Get<IInventory>().CanUseArmor())
+        if (!GameFacade.Instance.EquipmentUsage.CanUseArmor())
             return;
 
         if (currentArmor != null)

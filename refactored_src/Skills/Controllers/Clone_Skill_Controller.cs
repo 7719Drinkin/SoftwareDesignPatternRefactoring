@@ -97,11 +97,11 @@ public class Clone_Skill_Controller : MonoBehaviour
 
                 if (hit != null && canDuplicate)
                     if (Random.Range(0, 100) < chanceToDuplicate)
-                        ServiceLocator.Instance.Get<ISkillManager>().Clone.CreateClone(hit.transform, new Vector3(0.5f * DuplicateOffset, 0));
+                        GameFacade.Instance.Skills.Clone.CreateClone(hit.transform, new Vector3(0.5f * DuplicateOffset, 0));
 
-                if (ServiceLocator.Instance.Get<ISkillManager>().Clone.clone)
-                    if (ServiceLocator.Instance.Get<IInventory>().GetEquipment(EquipmentType.Weapon) && ServiceLocator.Instance.Get<IInventory>().CanUseWeapon())
-                        ServiceLocator.Instance.Get<IInventory>().GetEquipment(EquipmentType.Weapon).ExecuteItemEffect(hit.transform);
+                if (GameFacade.Instance.Skills.Clone.clone)
+                    if (GameFacade.Instance.Inventory.GetEquipment(EquipmentType.Weapon) && GameFacade.Instance.EquipmentUsage.CanUseWeapon())
+                        GameFacade.Instance.Inventory.GetEquipment(EquipmentType.Weapon).ExecuteItemEffect(hit.transform);
             }
         }
     }

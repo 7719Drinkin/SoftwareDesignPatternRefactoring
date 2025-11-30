@@ -71,6 +71,14 @@ public class CharacterStats : MonoBehaviour
     public bool isInvincible { get; private set; }         // 是否无敌
     public bool isDead { get; private set; }               // 是否死亡
 
+    // ========== Strategy Pattern ==========
+    private IDamageCalculationStrategy physicalDamageStrategy;     // 物理伤害策略
+    private IDamageCalculationStrategy magicalDamageStrategy;      // 魔法伤害策略（默认自动选择元素）
+    // private IDamageCalculationStrategy trueDamageStrategy;      // 可扩展的真实伤害
+    // private IDamageCalculationStrategy percentDamageStrategy;   // 可扩展的百分比伤害
+    private IDamageCalculationStrategy currentDamageStrategy;      // 当前使用的伤害策略（可运行时切换）
+    // =====================================
+
     /// <summary>
     /// 初始化角色属性
     /// </summary>
@@ -94,6 +102,12 @@ public class CharacterStats : MonoBehaviour
         // 通过ServiceLocator获取依赖
         playerManager = ServiceLocator.Instance.Get<IPlayerManager>();
         audioManager = ServiceLocator.Instance.Get<IAudioManager>();
+
+        // ========== 初始化策略模式 ==========
+        physicalDamageStrategy = new PhysicalDamageStrategy();
+        magicalDamageStrategy = new MagicalDamageStrategy(); 
+        currentDamageStrategy = physicalDamageStrategy;  // 默认使用物理伤害策略
+        // ===================================
     }
 
     /// <summary>
@@ -199,7 +213,25 @@ public class CharacterStats : MonoBehaviour
     protected virtual void DecreaseHealthBy(int damage) => currentHealth -= damage;
 
     /// <summary>
-    /// 造成物理伤害
+    /// 设置伤害计算策略（策略模式的核心优势：运行时切换策略）
+    /// </summary>
+    /// <param name="strategy">伤害计算策略</param>
+    public void SetDamageStrategy(IDamageCalculationStrategy strategy)
+    {
+        if (strategy != null)
+            currentDamageStrategy = strategy;
+    }
+
+    /// <summary>
+    /// 重置为默认物理伤害策略
+    /// </summary>
+    public void ResetToPhysicalDamageStrategy()
+    {
+        currentDamageStrategy = physicalDamageStrategy;
+    }
+
+    /// <summary>
+    /// 造成物理伤害 - 使用策略模式
     /// </summary>
     /// <param name="targetStats">目标属性</param>
     /// <param name="attacker">攻击者</param>
@@ -219,15 +251,11 @@ public class CharacterStats : MonoBehaviour
             return;
         }
 
-        int totalDamage = damage.GetValue() + strength.GetValue() * 5;
-
-        bool canCrit = CanCrit();
-        if (canCrit)
-            totalDamage = CalculateCriticalDamage(totalDamage);
-
-        totalDamage = CheckTargetArmor(targetStats, totalDamage);
-
-        targetStats.TakeDamage(totalDamage, attacker, canDoDamage, canCrit);
+        // ========== 使用策略模式计算物理伤害 ==========
+        // 使用当前策略（默认是物理伤害策略，但可以在运行时切换）
+        DamageResult result = currentDamageStrategy.CalculateDamage(this, targetStats, attacker, null);
+        targetStats.TakeDamage(result.FinalDamage, attacker, canDoDamage, result.IsCritical);
+        // =============================================
     }
 
     protected virtual void TakeDamageFX(bool canCrit)
@@ -248,79 +276,69 @@ public class CharacterStats : MonoBehaviour
     }
 
     /// <summary>
-    /// 造成魔法伤害（指定元素）
+    /// 造成魔法伤害（指定元素）- 使用策略模式
     /// </summary>
     /// <param name="targetStats">目标属性</param>
     /// <param name="attacker">攻击者</param>
     /// <param name="specifiedElement">指定元素类型</param>
     public virtual void DoMagicalDamage(CharacterStats targetStats, Transform attacker, ElementType specifiedElement)
     {
+        if (targetStats == null || targetStats.isInvincible)
+            return;
+
+        // ========== 使用策略模式计算魔法伤害 ==========
+        // 切换为魔法伤害策略，并传入元素类型参数
+        IDamageCalculationStrategy previousStrategy = currentDamageStrategy;  // 保存之前的策略
+        currentDamageStrategy = magicalDamageStrategy;  // 切换到魔法伤害策略
+        
+        // 使用策略计算伤害，传入元素类型参数
+        DamageResult result = currentDamageStrategy.CalculateDamage(this, targetStats, attacker, specifiedElement);
+
+        // 应用伤害
+        targetStats.TakeDamage(result.FinalDamage, attacker, true, false);
+
+        // 应用元素效果（如果策略返回了元素类型）
+        if (result.CanApplyElementEffect && result.ElementType.HasValue)
+        {
+            ApplyElementEffect(targetStats, result.ElementType.Value);
+        }
+
+        // 恢复之前的策略（魔法伤害是临时切换）
+        currentDamageStrategy = previousStrategy;
+        // =============================================
+    }
+
+    /// <summary>
+    /// 应用元素效果
+    /// </summary>
+    private void ApplyElementEffect(CharacterStats targetStats, ElementType elementType)
+    {
         if (targetStats == null)
             return;
 
-        if (targetStats.isInvincible)
-            return;
-
-        int _fireDamage = fireDamage.GetValue();
-        int _iceDamage = iceDamage.GetValue();
-        int _lightningDamage = lightningDamage.GetValue();
-
-        int totalMagicalDamage = _fireDamage + _iceDamage + _lightningDamage + 5 * intelligence.GetValue();
-        totalMagicalDamage -= targetStats.magicResistance.GetValue() + targetStats.intelligence.GetValue() * 3;
-        totalMagicalDamage = Mathf.Clamp(totalMagicalDamage, 0, int.MaxValue);
-
-        if (targetStats == null)
-            return;
-        targetStats.TakeDamage(totalMagicalDamage, attacker, true, false);
-
-        // 确定要应用的元素效果
         bool canApplyIgnite = false;
         bool canApplyChill = false;
         bool canApplyShock = false;
 
-        if (specifiedElement == ElementType.Auto)
+        // 根据元素类型确定要应用的效果
+        switch (elementType)
         {
-            // 自动选择：根据最高伤害值选择元素效果
-            int maxDamage = Mathf.Max(_fireDamage, _iceDamage, _lightningDamage);
-            if (maxDamage <= 0)
-                return;
-
-            List<int> maxElements = new List<int>();
-            if (_fireDamage == maxDamage) maxElements.Add(0);
-            if (_iceDamage == maxDamage) maxElements.Add(1);
-            if (_lightningDamage == maxDamage) maxElements.Add(2);
-            int selectedElement = maxElements[Random.Range(0, maxElements.Count)];
-
-            canApplyIgnite = (selectedElement == 0);
-            canApplyChill = (selectedElement == 1);
-            canApplyShock = (selectedElement == 2);
-        }
-        else
-        {
-            // 指定元素：强制使用指定的元素效果
-            switch (specifiedElement)
-            {
-                case ElementType.Fire:
-                    canApplyIgnite = (_fireDamage > 0);
-                    break;
-                case ElementType.Ice:
-                    canApplyChill = (_iceDamage > 0);
-                    break;
-                case ElementType.Lightning:
-                    canApplyShock = (_lightningDamage > 0);
-                    break;
-            }
+            case ElementType.Fire:
+                canApplyIgnite = (fireDamage.GetValue() > 0);
+                if (canApplyIgnite)
+                    targetStats.SetupIgniteDamage(Mathf.RoundToInt(targetStats.currentHealth * Mathf.Clamp(fireDamage.GetValue() * 0.0002f, 0, 0.01f)));
+                break;
+            case ElementType.Ice:
+                canApplyChill = (iceDamage.GetValue() > 0);
+                break;
+            case ElementType.Lightning:
+                canApplyShock = (lightningDamage.GetValue() > 0);
+                if (canApplyShock)
+                    targetStats.SetupShockDamage(Mathf.RoundToInt(lightningDamage.GetValue() * 1.2f));
+                break;
         }
 
-        // 应用对应的伤害效果
-        if (targetStats == null)
-            return;
-        if (canApplyIgnite)
-            targetStats.SetupIgniteDamage(Mathf.RoundToInt(targetStats.currentHealth * Mathf.Clamp(_fireDamage * 0.0002f, 0, 0.01f)));
-
-        if (canApplyShock)
-            targetStats.SetupShockDamage(Mathf.RoundToInt(_lightningDamage * 1.2f));
-
+        // 应用状态异常
         targetStats.ApplyAilments(canApplyIgnite, canApplyChill, canApplyShock);
     }
 

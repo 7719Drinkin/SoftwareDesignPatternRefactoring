@@ -1,27 +1,27 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
+/// <summary>
+/// 水晶技能 - 继承自Skill基类
+/// 实现水晶的创建、传送和多重水晶效果
+/// 通过事件总线接收解锁事件，实现与解锁逻辑的解耦
+/// </summary>
 public class Crystal_Skill : Skill
 {
     [SerializeField] private GameObject crystalPrefab;
     [SerializeField] private float crystalDuration;
-    [SerializeField] private UI_SkillTreeSlot crystalUnlockButton;
     public bool crystal;
     private GameObject currentCrystal;
 
     [Header("Crystal mirage")]
-    [SerializeField] private UI_SkillTreeSlot mirageUnlockButton;
     private bool createMirage;
 
     [Header("Explosive crystal")]
-    [SerializeField] private UI_SkillTreeSlot explaodeUnlockButton;
     private bool canExplode;
 
     [Header("Moving crystal")]
     [SerializeField] private float moveSpeed;
-    [SerializeField] private UI_SkillTreeSlot moveUnlockButton;
     private bool canMoveToEnemy;
 
     [Header("Multi crystal")]
@@ -29,39 +29,49 @@ public class Crystal_Skill : Skill
     public float multiStackCooldown;
     [SerializeField] private float useTimeWindow;
     [SerializeField] private List<GameObject> crystalLeft = new List<GameObject>();
-    [SerializeField] private UI_SkillTreeSlot multiUnlockButton;
     public bool canUseMultiStacks;
+
+    private GameEventBus eventBus;
 
     protected override void Start()
     {
         base.Start();
 
-        crystalUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockCrystal);
-        mirageUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockMirage);
-        explaodeUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockExplode);
-        moveUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockMove);
-        multiUnlockButton.GetComponent<Button>().onClick.AddListener(UnlockMulti);
-
-        // 延迟初始化，确保保存系统已经加载完成
-        StartCoroutine(DelayedInitialization());
+        // ========== 订阅技能解锁事件（Observer Pattern） ==========
+        eventBus = ServiceLocator.Instance.Get<GameEventBus>();
+        eventBus?.Subscribe<SkillUnlockedEvent>(OnSkillUnlocked);
+        // ===========================================================
     }
 
-    private System.Collections.IEnumerator DelayedInitialization()
+    private void OnDestroy()
     {
-        // 等待一帧，确保所有保存数据都已加载
-        yield return null;
+        // 取消订阅
+        eventBus?.Unsubscribe<SkillUnlockedEvent>(OnSkillUnlocked);
+    }
 
-        // 根据技能槽的解锁状态初始化技能状态
-        crystal = crystalUnlockButton.unlocked;
-        createMirage = mirageUnlockButton.unlocked;
-        canExplode = explaodeUnlockButton.unlocked;
-        canMoveToEnemy = moveUnlockButton.unlocked;
-        canUseMultiStacks = multiUnlockButton.unlocked;
-
-        // 同步触发事件，驱动 UI 立即更新（从存档加载时）
-        var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
-        if (canUseMultiStacks)
-            eventBus?.Publish(new SkillUnlockedEvent { SkillName = "MultiCrystal" });
+    /// <summary>
+    /// 处理技能解锁事件 - 从解锁类接收解锁通知
+    /// </summary>
+    private void OnSkillUnlocked(SkillUnlockedEvent evt)
+    {
+        switch (evt.SkillName)
+        {
+            case "Crystal":
+                crystal = true;
+                break;
+            case "Mirage":
+                createMirage = true;
+                break;
+            case "Explode":
+                canExplode = true;
+                break;
+            case "Move":
+                canMoveToEnemy = true;
+                break;
+            case "MultiCrystal":
+                canUseMultiStacks = true;
+                break;
+        }
     }
 
     public override void UseSkill()
@@ -167,50 +177,4 @@ public class Crystal_Skill : Skill
         });
     }
 
-    private void UnlockCrystal()
-    {
-        if (crystalUnlockButton.CanUnlockSkillSlot() && crystalUnlockButton.unlocked)
-        {
-            crystal = true;
-        }
-    }
-
-    private void UnlockMirage()
-    {
-        if (mirageUnlockButton.CanUnlockSkillSlot() && mirageUnlockButton.unlocked)
-        {
-            createMirage = true;
-        }
-    }
-
-    private void UnlockExplode()
-    {
-        if (explaodeUnlockButton.CanUnlockSkillSlot() && explaodeUnlockButton.unlocked)
-        {
-            canExplode = true;
-        }
-    }
-
-    private void UnlockMove()
-    {
-        if (moveUnlockButton.CanUnlockSkillSlot() && moveUnlockButton.unlocked)
-        {
-            canMoveToEnemy = true;
-        }
-    }
-
-    private void UnlockMulti()
-    {
-        if (multiUnlockButton.CanUnlockSkillSlot() && multiUnlockButton.unlocked)
-        {
-            canUseMultiStacks = true;
-            
-            // ========== 发布技能解锁事件到事件总线（Observer Pattern） ==========
-            var eventBus = ServiceLocator.Instance.Get<GameEventBus>();
-            eventBus?.Publish(new SkillUnlockedEvent
-            {
-                SkillName = "MultiCrystal"
-            });
-        }
-    }
 }

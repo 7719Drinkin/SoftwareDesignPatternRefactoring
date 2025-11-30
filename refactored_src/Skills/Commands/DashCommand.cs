@@ -9,12 +9,17 @@ public class DashCommand : ISkillCommand
     private readonly Player player;
     private readonly ISkillManager skillManager;
     private readonly IInventory inventory;
+    private readonly IAmuletSkillManager amuletSkillManager;
+    private readonly IEquipmentUsageManager equipmentUsageManager;
 
-    public DashCommand(Player player, ISkillManager skillManager, IInventory inventory)
+    public DashCommand(Player player, ISkillManager skillManager, IInventory inventory, 
+        IAmuletSkillManager amuletSkillManager, IEquipmentUsageManager equipmentUsageManager)
     {
         this.player = player;
         this.skillManager = skillManager;
         this.inventory = inventory;
+        this.amuletSkillManager = amuletSkillManager;
+        this.equipmentUsageManager = equipmentUsageManager;
     }
 
     public void Execute()
@@ -41,7 +46,7 @@ public class DashCommand : ISkillCommand
                 skillManager.Dash.dashDir = player.facingDir;
 
             // 如果装备了护身符且可以使用，则延迟使用
-            if (inventory.DashUseAmulet && inventory.CanUseAmulet())
+            if (amuletSkillManager.DashUseAmulet && equipmentUsageManager.CanUseAmulet())
             {
                 player.StartCoroutine(DelayUseAmulet());
             }

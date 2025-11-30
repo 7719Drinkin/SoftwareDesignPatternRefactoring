@@ -24,8 +24,8 @@ public class PlayerJumpState : PlayerState
 
         ItemData_Equipment equipedAmulet = inventory.GetEquipment(EquipmentType.Amulet);
 
-        if (equipedAmulet != null && inventory.JumpUseAmulet)
-            if (inventory.CanUseAmulet())
+        if (equipedAmulet != null && amuletSkillManager.JumpUseAmulet)
+            if (equipmentUsageManager.CanUseAmulet())
                 equipedAmulet.ExecuteItemEffect(player.transform);
 
         afterImageTimer = 0f;
