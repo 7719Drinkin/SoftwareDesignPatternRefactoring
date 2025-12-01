@@ -1,0 +1,31 @@
+public class PlayerMoveState : PlayerGroundedState
+{
+    public PlayerMoveState(Player _player, PlayerStateMachine _stateMachine, string animBoolName) : base(_player, _stateMachine, animBoolName)
+    {
+
+    }
+
+    public override void Enter()
+    {
+        base.Enter();
+
+        audioManager.PlaySFXLoop(9);
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
+
+        audioManager.StopSFX(9);
+    }
+
+    public override void Update()
+    {
+        base.Update();
+
+        player.SetVelocity(xInput * player.moveSpeed, rb.velocity.y);
+
+        if (xInput == 0)
+            stateMachine.ChangeState(player.idleState);
+    }
+}
