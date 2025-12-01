@@ -1,3 +1,10 @@
+/***************************************************************
+ *  Refactored with: Factory Method Pattern
+ *  Pattern Type: Creational
+ *
+ *  Document Reference:
+ *  - See report section "2.2.2 Factory Method Pattern (Creational)"
+ ***************************************************************/
 public interface IEnemyStateFactory<out TStates> where TStates : IEnemyStates
 {
     /// <summary>
@@ -8,4 +15,7 @@ public interface IEnemyStateFactory<out TStates> where TStates : IEnemyStates
     /// <returns>状态集合</returns>
     TStates CreateStates(Enemy enemy, EnemyStateMachine stateMachine);
 }
+/***************************************************************
+ * End
+ ***************************************************************/
 

@@ -1,29 +1,12 @@
 using UnityEngine;
 
-// ========== Facade Pattern + Adapter Pattern ==========
-// 
-// 【外观模式 (Facade Pattern)】
-// 目的：为复杂的子系统提供统一的简化接口
-// 作用：隐藏 ServiceLocator 的复杂性，提供便捷的服务访问
-// 
-// 【适配器模式 (Adapter Pattern)】
-// 目的：将一个接口转换成另一个接口，让原本不兼容的类能一起工作
-// 作用：将 ServiceLocator.Get<T>() 的泛型方法接口适配为简单的属性访问接口
-// 
-// 双重模式优势：
-// 1. 简化客户端代码：不需要知道 ServiceLocator 的存在
-// 2. 接口适配：将 ServiceLocator.Get<T>() 适配为 game.Player, game.Skills 等
-// 3. 降低耦合：客户端只依赖 Facade，不依赖具体 Manager
-// 4. 易于维护：Manager 变更只需修改 Facade
-// 5. 统一入口：所有游戏系统访问入口统一
-// 
-// 适配器模式体现：
-// - Target（目标接口）: 简单的属性访问（game.Player, game.Skills）
-// - Adaptee（被适配者）: ServiceLocator.Get<T>() 泛型方法
-// - Adapter（适配器）: GameFacade 类
-// - Client（客户端）: 使用 GameFacade 的代码
-// ======================================================
-
+/***************************************************************
+ *  Refactored with: Facade Pattern
+ *  Pattern Type: Structural
+ *
+ *  Document Reference:
+ *  - See report section "2.2.5 Facade Pattern (Structural)"
+ ***************************************************************/
 /// <summary>
 /// 游戏外观类 - 提供统一的游戏系统访问入口
 /// 同时实现外观模式（简化子系统）和适配器模式（适配 ServiceLocator 接口）
@@ -261,4 +244,7 @@ public class GameFacade
         saveManager?.LoadGame();
     }
 }
+/***************************************************************
+ * End
+ ***************************************************************/
 

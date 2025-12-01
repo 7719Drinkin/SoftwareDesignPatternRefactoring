@@ -1,9 +1,12 @@
-// ========== Strategy Pattern (ConcreteStrategy) ==========
-// 目的：实现物理伤害计算策略
-// 作用：封装物理伤害的计算逻辑（基础伤害+力量加成，暴击，护甲减免）
-// =========================================================
 using UnityEngine;
 
+/***************************************************************
+ *  Refactored with: Strategy Pattern
+ *  Pattern Type: Behavioral
+ *
+ *  Document Reference:
+ *  - See report section "2.2.8 Strategy Pattern (Behavioral)"
+ ***************************************************************/
 /// <summary>
 /// 物理伤害计算策略 - Strategy Pattern 的具体策略
 /// 计算物理伤害：基础伤害 + 力量加成，支持暴击，受护甲减免
@@ -75,4 +78,7 @@ public class PhysicalDamageStrategy : IDamageCalculationStrategy
         return Mathf.Clamp(damage, 0, int.MaxValue);
     }
 }
+/***************************************************************
+ * End
+ ***************************************************************/
 

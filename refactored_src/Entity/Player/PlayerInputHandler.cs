@@ -1,5 +1,12 @@
 using UnityEngine;
 
+/***************************************************************
+ *  Refactored with: Command Pattern
+ *  Pattern Type: Behavioral
+ *
+ *  Document Reference:
+ *  - See report section "2.2.4 Command Pattern (Behavioral)"
+ ***************************************************************/
 /// <summary>
 /// 玩家输入处理器 - Invoker（命令调用者）
 /// 负责检测输入并执行对应的命令
@@ -86,4 +93,7 @@ public class PlayerInputHandler : MonoBehaviour
         }
     }
 }
+/***************************************************************
+ * End
+ ***************************************************************/
 

@@ -1,11 +1,12 @@
 using UnityEngine;
 
-// ========== Refactored with Service Locator Pattern ==========
-// 目的：统一的服务注册和游戏初始化入口
-// 作用：在游戏启动时注册所有核心服务到ServiceLocator
-// 重构日期：2025-11-28
-// ============================================================
-
+/***************************************************************
+ *  Refactored with: Service Locator Pattern
+ *  Pattern Type: Additional
+ *
+ *  Document Reference:
+ *  - See report section "2.2.1 Service Locator Pattern (Additional)"
+ ***************************************************************/
 /// <summary>
 /// 游戏引导程序 - 游戏启动时的统一初始化入口
 /// 负责：
@@ -125,4 +126,7 @@ public class GameBootstrap : MonoBehaviour
         ServiceLocator.Instance.RegisterSingleton<GameEventBus>(eventBus);
     }
 }
+/***************************************************************
+ * End
+ ***************************************************************/
 

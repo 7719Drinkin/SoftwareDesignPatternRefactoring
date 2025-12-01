@@ -1,14 +1,12 @@
 using UnityEngine;
 
-// ========== Bridge Pattern (Implementor Interface) ==========
-// 目的：定义桥接模式的实现者接口
-// 桥接模式结构：
-// - Abstraction: ItemData_Equipment
-// - Implementor: IItemEffect
-// - ConcreteImplementor: Fire_Effect, Heal_Effect 等（实现接口）
-// - Bridge: ItemData_Equipment.itemEffects[]（桥接引用）
-// ============================================================
-
+/***************************************************************
+ *  Refactored with: Bridge Pattern
+ *  Pattern Type: Structural
+ *
+ *  Document Reference:
+ *  - See report section "2.2.6 Bridge Pattern (Structural)"
+ ***************************************************************/
 /// <summary>
 /// 装备效果接口 - 实现者接口（Bridge Pattern - Implementor）
 /// 定义装备效果的执行接口，符合官方桥接模式定义
@@ -24,4 +22,7 @@ public interface IItemEffect
     /// <returns>是否成功执行效果</returns>
     bool ExecuteEffect(Transform position);
 }
+/***************************************************************
+ * End
+ ***************************************************************/
 

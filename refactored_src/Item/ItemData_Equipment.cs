@@ -9,14 +9,13 @@ public enum EquipmentType
     Flask
 }
 
-// ========== Bridge Pattern (Abstraction) ==========
-// 目的：将装备和效果分离，使它们可以独立变化
-// - 使用组合（IItemEffect[]）来桥接效果实现
-// - 核心思想：装备（Abstraction）和效果（Implementor）分离 
-// 核心思想已实现：分离抽象和实现，独立扩展 
-// 适合 Unity ScriptableObject 架构，便于在编辑器中配置
-// ===================================================
-
+/***************************************************************
+ *  Refactored with: Bridge Pattern
+ *  Pattern Type: Structural
+ *
+ *  Document Reference:
+ *  - See report section "2.2.6 Bridge Pattern (Structural)"
+ ***************************************************************/
 /// <summary>
 /// 装备数据 - 桥接模式的抽象部分（Bridge Pattern - Abstraction）
 /// 通过组合 IItemEffect[] 实现效果，而不是继承
@@ -182,3 +181,6 @@ public class ItemData_Equipment : ItemData
         }
     }
 }
+/***************************************************************
+ * End
+ ***************************************************************/

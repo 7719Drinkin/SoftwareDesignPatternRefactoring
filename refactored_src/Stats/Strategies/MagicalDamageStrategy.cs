@@ -1,10 +1,13 @@
-// ========== Strategy Pattern (ConcreteStrategy) ==========
-// 目的：实现魔法伤害计算策略
-// 作用：封装魔法伤害的计算逻辑（元素伤害+智力加成，魔法抗性减免，元素效果应用）
-// =========================================================
 using System.Collections.Generic;
 using UnityEngine;
 
+/***************************************************************
+ *  Refactored with: Strategy Pattern
+ *  Pattern Type: Behavioral
+ *
+ *  Document Reference:
+ *  - See report section "2.2.8 Strategy Pattern (Behavioral)"
+ ***************************************************************/
 /// <summary>
 /// 魔法伤害计算策略 - Strategy Pattern 的具体策略
 /// 计算魔法伤害：元素伤害 + 智力加成，受魔法抗性减免，可以应用元素效果
@@ -78,4 +81,7 @@ public class MagicalDamageStrategy : IDamageCalculationStrategy
         }
     }
 }
+/***************************************************************
+ * End
+ ***************************************************************/
 

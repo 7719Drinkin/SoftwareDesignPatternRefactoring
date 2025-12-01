@@ -1,5 +1,12 @@
 using System;
 
+/***************************************************************
+ *  Refactored with: Factory Method Pattern
+ *  Pattern Type: Creational
+ *
+ *  Document Reference:
+ *  - See report section "2.2.2 Factory Method Pattern (Creational)"
+ ***************************************************************/
 public class SlimeStateFactory : IEnemyStateFactory<SlimeStates>
 {
     public SlimeStates CreateStates(Enemy enemy, EnemyStateMachine stateMachine)
@@ -15,4 +22,7 @@ public class SlimeStateFactory : IEnemyStateFactory<SlimeStates>
         );
     }
 }
+/***************************************************************
+ * End
+ ***************************************************************/
 
