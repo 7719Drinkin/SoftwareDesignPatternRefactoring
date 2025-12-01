@@ -7,9 +7,8 @@
 /***************************************************************
  *  Refactored with: [Design Pattern Name]
  *  Pattern Type: [Creational / Structural / Behavioral / Additional]
- *  Team Member: [Your Name, Matric Number]
  *
- *  UML Reference:
+ *  Document Reference:
  *  - See report section “2.2.x Pattern Name (Pattern Type)”
  ***************************************************************/
 
