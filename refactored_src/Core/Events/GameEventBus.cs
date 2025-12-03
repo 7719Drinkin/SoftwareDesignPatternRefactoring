@@ -2,6 +2,13 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/***************************************************************
+ *  Refactored with: Observer Pattern
+ *  Pattern Type: Behavioral
+ *
+ *  Document Reference:
+ *  - See report section "2.2.3 Observer Pattern (Behavioral)"
+ ***************************************************************/
 /// <summary>
 /// 游戏事件总线 - Observer Pattern 的 Subject（发布者）
 /// 负责管理事件订阅和发布
@@ -60,4 +67,7 @@ public class GameEventBus
         }
     }
 }
+/***************************************************************
+ * End
+ ***************************************************************/
 

@@ -1,10 +1,13 @@
-// ========== Composite Pattern (Composite) ==========
-// 目的：表示组合模式中的组合节点（UI 元素组）
-// 作用：管理多个 UI 组件（可以是单个元素或元素组），提供统一的批量操作
-// ====================================================
 using System.Collections.Generic;
 using UnityEngine;
 
+/***************************************************************
+ *  Refactored with: Composite Pattern
+ *  Pattern Type: Structural
+ *
+ *  Document Reference:
+ *  - See report section "2.2.7 Composite Pattern (Structural)"
+ ***************************************************************/
 /// <summary>
 /// UI 元素组 - 组合模式的组合节点
 /// 管理多个 UI 组件，可以包含单个元素或元素组
@@ -80,4 +83,7 @@ public class UIElementGroup : IUIComponent
     /// </summary>
     public int Count => components.Count;
 }
+/***************************************************************
+ * End
+ ***************************************************************/
 

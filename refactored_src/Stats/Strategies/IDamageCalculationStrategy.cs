@@ -1,19 +1,12 @@
-// ========== Strategy Pattern (Strategy Interface) ==========
-// 目的：定义一系列算法，并将每种算法分别放入独立的类中
-// 作用：将不同的伤害计算算法封装为独立策略，使它们可以相互替换
-// 优势：
-// 1. 算法独立：每种伤害计算逻辑独立封装
-// 2. 易于扩展：新增伤害类型只需实现新策略
-// 3. 可替换：运行时可以切换不同的伤害计算策略
-// 4. 符合开闭原则：对扩展开放，对修改关闭
-// 
-// 策略模式结构：
-// - Strategy（策略接口）: IDamageCalculationStrategy
-// - ConcreteStrategy（具体策略）: PhysicalDamageStrategy, MagicalDamageStrategy
-// - Context（上下文）: CharacterStats
-// ============================================================
 using UnityEngine;
 
+/***************************************************************
+ *  Refactored with: Strategy Pattern
+ *  Pattern Type: Behavioral
+ *
+ *  Document Reference:
+ *  - See report section "2.2.8 Strategy Pattern (Behavioral)"
+ ***************************************************************/
 /// <summary>
 /// 伤害计算策略接口 - Strategy Pattern
 /// 定义所有伤害计算策略必须实现的方法
@@ -42,4 +35,7 @@ public class DamageResult
     public bool CanApplyElementEffect { get; set; } // 是否可以应用元素效果
     public ElementType? ElementType { get; set; }  // 元素类型（如果适用）
 }
+/***************************************************************
+ * End
+ ***************************************************************/
 

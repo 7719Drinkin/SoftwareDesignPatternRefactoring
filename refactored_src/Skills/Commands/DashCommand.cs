@@ -1,5 +1,12 @@
 using UnityEngine;
 
+/***************************************************************
+ *  Refactored with: Command Pattern
+ *  Pattern Type: Behavioral
+ *
+ *  Document Reference:
+ *  - See report section "2.2.4 Command Pattern (Behavioral)"
+ ***************************************************************/
 /// <summary>
 /// 冲刺命令 - 封装冲刺技能的执行逻辑
 /// Receiver: Player + SkillManager + Inventory
@@ -68,4 +75,7 @@ public class DashCommand : ISkillCommand
             equipedAmulet.ExecuteItemEffect(player.transform);
     }
 }
+/***************************************************************
+ * End
+ ***************************************************************/
 

@@ -1,5 +1,12 @@
 using System;
 
+/***************************************************************
+ *  Refactored with: Factory Method Pattern
+ *  Pattern Type: Creational
+ *
+ *  Document Reference:
+ *  - See report section "2.2.2 Factory Method Pattern (Creational)"
+ ***************************************************************/
 public class SkeletonStateFactory : IEnemyStateFactory<SkeletonStates>
 {
     public SkeletonStates CreateStates(Enemy enemy, EnemyStateMachine stateMachine)
@@ -18,4 +25,7 @@ public class SkeletonStateFactory : IEnemyStateFactory<SkeletonStates>
         );
     }
 }
+/***************************************************************
+ * End
+ ***************************************************************/
 

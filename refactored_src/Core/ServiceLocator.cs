@@ -2,6 +2,13 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/***************************************************************
+ *  Refactored with: Service Locator Pattern
+ *  Pattern Type: Additional
+ *
+ *  Document Reference:
+ *  - See report section "2.2.1 Service Locator Pattern (Additional)"
+ ***************************************************************/
 /// <summary>
 /// 服务定位器 - 提供统一的服务注册和查找机制
 /// 优势：
@@ -90,4 +97,7 @@ public class ServiceLocator
         }
     }
 }
+/***************************************************************
+ * End
+ ***************************************************************/
 
